@@ -1,74 +1,63 @@
 ---
 name: breadcrumb
-description: Check for warnings on files and leave breadcrumbs for other agents. Use to explore project breadcrumbs, add warnings when you discover important context, and check files before operations.
+description: Coordinate with other agents via file-attached warnings. Check before editing files, claim files you're working on, release when done.
 allowed-tools: Bash(breadcrumb *)
 ---
 
 # Breadcrumb
 
-Coordinate with other agents via file-attached warnings. The plugin automatically handles session tracking.
+Prevent conflicts between agents working on the same codebase. Session tracking is automatic.
 
-## Quick Reference
+## When to use each command
 
-| Command | Purpose |
-|---------|---------|
-| `breadcrumb check ./file` | Check for warnings before editing |
-| `breadcrumb claim ./file "message"` | Mark file as work-in-progress |
-| `breadcrumb release ./file` | Release your claim |
-| `breadcrumb status` | See active claims |
-| `breadcrumb ls` | List all breadcrumbs |
+| Command | Use when... |
+|---------|-------------|
+| `check` | **Before editing any file** - see if another agent is working on it |
+| `claim` | **Starting work** on a file - warn other agents you're modifying it |
+| `release` | **Finishing work** - let other agents know the file is free |
+| `status` | You want to see what files are currently being worked on |
 
-## Core Workflow
+## Core workflow
 
-**Before editing a file:**
+**1. Before editing, check for warnings:**
 ```bash
 breadcrumb check ./src/api/users.ts
 ```
+- Exit 0 = safe to proceed
+- Exit 1 = warning exists, read the `suggestion` field
 
-**Claim a file you're working on:**
+**2. Claim what you're working on:**
 ```bash
 breadcrumb claim ./src/api/users.ts "Refactoring auth logic"
 ```
 
-**Release when done:**
+**3. Release when done:**
 ```bash
 breadcrumb release ./src/api/users.ts
 ```
 
-## Exit Codes
+## Leaving permanent notes
 
-- `0` = clear or info, safe to proceed
-- `1` = warning exists, read the `suggestion` field
-
-## Adding Permanent Context
-
-Leave notes for other agents about non-obvious code:
+For context that should persist beyond your session:
 ```bash
 breadcrumb add ./src/billing/tax.ts "Ceiling division is intentional for compliance" --severity info
 ```
 
-Add a time-limited warning:
-```bash
-breadcrumb add ./config/cache.yaml "Testing new settings" --ttl 1h
-```
+## Command reference
 
-## Available Flags
+| Command | Arguments | Purpose |
+|---------|-----------|---------|
+| `check <path>` | `--recursive` | Check path for warnings |
+| `claim <path> [message]` | `--task`, `--ttl` | Mark as work-in-progress |
+| `release <path>` | | Release your claim |
+| `status` | | Overview of active work |
+| `add <path> <message>` | `--severity`, `--ttl`, `--task` | Leave permanent context |
+| `ls` | `--active` | List all breadcrumbs |
+| `rm <path>` | | Remove a breadcrumb |
 
-| Flag | Commands | Purpose |
-|------|----------|---------|
-| `--severity info\|warn` | add | Set warning level (default: warn) |
-| `--ttl 1h` | add, claim | Auto-expire after duration |
-| `--task "name"` | add, claim | Add task context |
-| `--recursive` | check | Check directory recursively |
-| `--active` | ls | Show only active claims |
+## Output format
 
-## Output Format
-
-All commands output JSON. Parse the `suggestion` field for actionable guidance.
-
-## When to Use
-
-- Check files before editing to avoid conflicts
-- Claim files during multi-step refactors
-- Leave context about non-obvious code behavior
-- Document gotchas that aren't obvious from the code
+All commands output JSON. Key fields:
+- `status`: "clear", "info", or "warn"
+- `suggestion`: Actionable guidance when warnings exist
+- `breadcrumbs`: Array of matching breadcrumb objects

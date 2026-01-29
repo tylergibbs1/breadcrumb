@@ -13,7 +13,6 @@ import { registerPruneCommand } from "./commands/prune.js";
 import { registerReleaseCommand } from "./commands/release.js";
 import { registerRmCommand } from "./commands/rm.js";
 import { registerSessionEndCommand } from "./commands/session-end.js";
-import { registerShowCommand } from "./commands/show.js";
 import { registerStatusCommand } from "./commands/status.js";
 import { registerWaitCommand } from "./commands/wait.js";
 
@@ -38,7 +37,6 @@ registerReleaseCommand(program);
 registerStatusCommand(program);
 registerWaitCommand(program);
 registerLsCommand(program);
-registerShowCommand(program);
 registerPruneCommand(program);
 registerSessionEndCommand(program);
 
