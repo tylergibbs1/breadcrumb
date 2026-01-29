@@ -57,12 +57,14 @@ export function registerWaitCommand(program: Command): void {
         while (true) {
           const config = loadConfig(configPath);
 
-          // Find matching breadcrumbs that are active claims (session-scoped)
+          // Find matching breadcrumbs that are active claims
           const matches = findMatchingBreadcrumbs(config.breadcrumbs, targetPath);
 
-          // Only consider session-scoped breadcrumbs as "active claims"
-          // Ignore permanent/info breadcrumbs - they don't block
-          const activeClaims = matches.filter((b) => b.session_id);
+          // Active claims are either session-scoped or TTL-based warnings
+          // Ignore permanent info breadcrumbs - they don't block
+          const activeClaims = matches.filter(
+            (b) => b.session_id || (b.severity === "warn" && b.ttl)
+          );
 
           if (activeClaims.length === 0) {
             // Path is clear
