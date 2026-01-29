@@ -1,26 +1,91 @@
 # Breadcrumb
 
-Attach contextual warnings and notes to file paths. Designed for AI agents to check before reading or modifying files.
+**Agents have no persistent memory across sessions and no way to communicate with each other.**
+
+When Agent A refactors auth, Agent B (in a different session, or even the same session later) has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and simplifies it, breaking a unicode edge case that took hours to debug.
+
+Breadcrumb fixes this. It's a file-attached context layer that surfaces warnings *at the moment an agent tries to touch a file*.
 
 ```bash
 # Agent A leaves a warning
 breadcrumb add ./src/auth/legacy.ts "Migration in progress, don't touch until OAuth2 is live"
 
-# Agent B checks before editing
+# Agent B checks before editing (or this happens automatically via hook)
 breadcrumb check ./src/auth/legacy.ts
 # Exit code 1 (warn) → proceed with caution
 ```
 
-## Why Breadcrumb?
+## The Problem
 
-Codebases have institutional knowledge that isn't in the code:
-- "Don't touch this file until the migration is done"
-- "This looks wrong but it's intentional for compliance"
-- "Ask Sarah before changing anything here"
+Humans solve cross-session coordination with tribal knowledge. "Oh yeah, don't touch that file, Jake is migrating it." But agents don't have access to tribal knowledge. They see the code, they see the task, they act.
 
-Breadcrumb externalizes this knowledge into a format both humans and AI agents can query. Agents check breadcrumbs before file operations to surface warnings that aren't in the code itself.
+**What exists today doesn't work:**
 
-**Agent-to-agent communication:** The primary use case is agents leaving context for other agents (or themselves in future sessions). Think of it as shared memory for agents working on a codebase.
+| Solution | Why it fails |
+|----------|--------------|
+| Code comments | Not visible *before* you open the file. No severity. No expiration. |
+| README files | Too coarse. Nobody reads the README before every file touch. |
+| Documentation | Disconnected from the moment of action. |
+| CLAUDE.md | Project-wide, not file-specific. Can't say "this specific file is mid-refactor." |
+| Human memory | Agents don't have it. |
+
+Breadcrumb is the missing link between "comment in code" and "formal access control."
+
+## Three Core Use Cases
+
+### 1. Work-in-progress coordination
+
+"I'm actively refactoring this, don't touch it for the next hour"
+
+```bash
+breadcrumb add ./src/auth/ "Refactoring auth module" --session $CLAUDE_SESSION_ID
+# Auto-cleans when session ends
+```
+
+### 2. Preserved context
+
+"This looks wrong but it's intentional because of X" (survives across sessions)
+
+```bash
+breadcrumb add ./src/billing/tax.ts \
+  "Ceiling division is intentional for tax compliance" \
+  --ttl 30d
+```
+
+### 3. Human guardrails
+
+"Never modify this without approval" (only humans can set, agents are blocked)
+
+```bash
+breadcrumb add ./src/core/engine.ts \
+  "Do not modify without CTO approval" \
+  --severity stop
+```
+
+## How It Works
+
+Breadcrumb attaches warnings to file paths. When an agent (or human) checks a path, they get:
+
+- **Status**: `clear`, `info`, `warn`, or `stop`
+- **Exit code**: 0 (safe), 1 (warning), 2 (blocked)
+- **Suggestion**: Actionable guidance based on the breadcrumb
+
+```bash
+$ breadcrumb check ./src/auth/legacy.ts
+{
+  "status": "warn",
+  "path": "./src/auth/legacy.ts",
+  "breadcrumbs": [...],
+  "suggestion": "Migration in progress. DON'T touch until OAuth2 is live."
+}
+$ echo $?
+1
+```
+
+Agents integrate by checking exit codes:
+- **0**: Safe to proceed
+- **1**: Warning exists, proceed with caution
+- **2**: Blocked by human, do not proceed
 
 ## Installation
 
@@ -32,7 +97,7 @@ npm install -g breadcrumb
 bun add -g breadcrumb
 
 # From source
-git clone https://github.com/breadcrumb/breadcrumb
+git clone https://github.com/tylergibbs1/breadcrumb
 cd breadcrumb && bun install && bun run build
 ```
 
@@ -42,7 +107,7 @@ cd breadcrumb && bun install && bun run build
 # Initialize in your repo
 breadcrumb init
 
-# Add a warning
+# Add a warning (defaults to warn severity, human source)
 breadcrumb add ./src/auth/legacy.ts "Don't migrate until OAuth2 is live"
 
 # Check before editing
@@ -66,29 +131,19 @@ breadcrumb ls --pretty
 | `prune` | Remove expired breadcrumbs |
 | `session-end <id>` | Clean up session-scoped breadcrumbs |
 
-## Exit Codes
-
-The `check` command returns exit codes agents can use:
-
-| Code | Status | Meaning |
-|------|--------|---------|
-| 0 | `clear` / `info` | Safe to proceed |
-| 1 | `warn` | Proceed with caution |
-| 2 | `stop` | Do not proceed without human approval |
-
 ## Severity Levels
 
 | Level | Who can set | Behavior |
 |-------|-------------|----------|
 | `info` | Human, Agent | Informational note |
-| `warn` | Human, Agent | Warning, but proceed allowed |
-| `stop` | Human only | Blocks agent operations |
+| `warn` | Human, Agent | Warning, proceed with caution |
+| `stop` | **Human only** | Blocks agent operations |
 
-Agents can warn but not block. Only humans can set `stop` severity.
+**Agents can warn but not block.** Only humans can set `stop` severity. This ensures human oversight: an agent can flag a concern, but only a human can lock a file.
 
-## Expiration Options
+## Expiration
 
-Breadcrumbs can expire automatically:
+Breadcrumbs can expire automatically, preventing accumulation:
 
 ```bash
 # Session-scoped (expires when agent session ends)
@@ -101,7 +156,7 @@ breadcrumb add ./config.yaml "Testing" --ttl 2h
 breadcrumb add ./api/v2/ "Unstable" --expires 2024-06-01
 
 # Permanent (until manually removed)
-breadcrumb add ./vendor/ "Don't edit" --severity info
+breadcrumb add ./vendor/ "Don't edit"
 ```
 
 ## Path Patterns
@@ -111,54 +166,42 @@ breadcrumb add ./vendor/ "Don't edit" --severity info
 breadcrumb add ./src/auth/legacy.ts "Warning"
 
 # Directory (recursive) - note trailing slash
-breadcrumb add ./vendor/ "Vendored deps"
+breadcrumb add ./vendor/ "Vendored deps, don't edit"
 
 # Glob pattern
 breadcrumb add "*.generated.ts" "Auto-generated, edit templates instead"
 ```
 
-## Visibility Flags
-
-```bash
-# Only show to humans (agents won't see this)
-breadcrumb add ./src/payments.ts "Ask Sarah about history" --human-only
-
-# Only show to agents (noise for humans)
-breadcrumb add ./src/parser.ts "Handles unicode edge case" --agent-only
-```
-
 ## Agent Integration
 
-### Check before file operations
+### Python example
 
 ```python
 import subprocess
 import json
+import os
 
-def check_file(path: str) -> dict:
+SESSION_ID = os.environ.get("CLAUDE_SESSION_ID", "unknown")
+
+def check_before_edit(path: str):
+    """Check breadcrumbs before file operation."""
     result = subprocess.run(
         ["breadcrumb", "check", path],
         capture_output=True, text=True
     )
 
     if result.returncode == 2:
-        raise Exception("File blocked by breadcrumb")
+        # Blocked by human
+        data = json.loads(result.stdout)
+        raise Exception(f"Blocked: {data['suggestion']}")
 
     if result.returncode == 1:
+        # Warning - log and proceed with caution
         data = json.loads(result.stdout)
         print(f"Warning: {data['suggestion']}")
 
-    return json.loads(result.stdout) if result.stdout else {}
-```
-
-### Leave breadcrumbs for other agents
-
-```python
-import os
-
-SESSION_ID = os.environ.get("CLAUDE_SESSION_ID", "unknown")
-
 def leave_breadcrumb(path: str, message: str, ttl: str = None):
+    """Leave a breadcrumb for other agents."""
     cmd = ["breadcrumb", "add", path, message, "--source", "agent"]
 
     if ttl:
@@ -167,24 +210,22 @@ def leave_breadcrumb(path: str, message: str, ttl: str = None):
         cmd.extend(["--session", SESSION_ID])
 
     subprocess.run(cmd)
+```
 
-# Mark work in progress
-leave_breadcrumb("./src/api/users.ts", "Refactoring in progress")
+### Using guard
 
-# Leave discovered knowledge
-leave_breadcrumb("./src/utils/parser.ts", "Regex handles unicode combining chars", ttl="7d")
+```bash
+# Only runs if breadcrumb allows
+breadcrumb guard ./secrets.env -- cat ./secrets.env
 ```
 
 ## Claude Code Plugin (Optional)
 
-For Claude Code users, an optional plugin adds automatic enforcement:
+For Claude Code users, an optional plugin adds **automatic enforcement**:
 
 ```bash
-# Load the plugin
 claude --plugin-dir ./breadcrumb-plugin
 ```
-
-**What the plugin adds:**
 
 | Feature | Standalone | With Plugin |
 |---------|------------|-------------|
@@ -192,7 +233,18 @@ claude --plugin-dir ./breadcrumb-plugin
 | Block `stop` level | Agent respects exit code | Hook blocks operation |
 | Session cleanup | Manual | Automatic (SessionEnd hook) |
 
-See `breadcrumb-plugin/` for the plugin source.
+Without the plugin, agents call `breadcrumb check` explicitly. With the plugin, it happens automatically before every file operation.
+
+See `breadcrumb-plugin/` for source.
+
+## Design Philosophy
+
+**It's not humans leaving notes for agents. It's agents leaving notes for other agents, with humans occasionally stepping in to add guardrails or clean up stale breadcrumbs.**
+
+- **Agents can warn but not block** — ensures human oversight
+- **Session-scoped by default** — prevents breadcrumb accumulation
+- **TTL for discovered knowledge** — useful without permanent clutter
+- **Hooks over skills for enforcement** — automatic beats optional
 
 ## Environment Variables
 
@@ -206,7 +258,7 @@ See `breadcrumb-plugin/` for the plugin source.
 
 ## Storage
 
-Breadcrumbs are stored in `.breadcrumbs.json` at the repo root:
+Breadcrumbs are stored in `.breadcrumbs.json` at repo root:
 
 ```json
 {
@@ -226,53 +278,12 @@ Breadcrumbs are stored in `.breadcrumbs.json` at the repo root:
 }
 ```
 
-## Examples
-
-### Human blocks a critical file
-
-```bash
-breadcrumb add ./src/core/engine.ts \
-  "Do not modify without CTO approval" \
-  --severity stop --source human
-```
-
-### Agent marks work in progress
-
-```bash
-breadcrumb add ./src/auth/ \
-  "Refactoring auth module" \
-  --session $CLAUDE_SESSION_ID
-```
-
-### Agent shares discovered knowledge
-
-```bash
-breadcrumb add ./src/billing/tax.ts \
-  "Tax calculation uses ceiling division for compliance" \
-  --agent-only --ttl 30d
-```
-
-### Check with guard
-
-```bash
-# Only runs cat if breadcrumb allows
-breadcrumb guard ./secrets.env -- cat ./secrets.env
-```
-
 ## Development
 
 ```bash
-# Install dependencies
 bun install
-
-# Run in development
 bun run src/index.ts <command>
-
-# Build standalone binary
 bun run build
-
-# Type check
-bun run typecheck
 ```
 
 ## License
