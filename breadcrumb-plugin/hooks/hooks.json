@@ -1,12 +1,12 @@
 {
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Read|Edit|Write",
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "breadcrumb check \"$FILE\" 2>/dev/null || true"
+            "command": "[ -f .breadcrumbs.json ] || breadcrumb init 2>/dev/null || true"
           }
         ]
       }
