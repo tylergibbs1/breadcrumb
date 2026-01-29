@@ -18,7 +18,7 @@ Breadcrumb fixes this. Leave a note, and future agents see it when they read the
 breadcrumb add ./src/parser.ts "Regex handles unicode edge cases, don't simplify"
 
 # Future agent reads the file → sees the note automatically
-📝 Regex handles unicode edge cases, don't simplify
+📝 BREADCRUMB: Regex handles unicode edge cases, don't simplify
 ```
 
 ## Installation
@@ -55,7 +55,30 @@ breadcrumb rm ./src/auth.ts
 - Code that looks like it could be simplified but shouldn't be
 - Bug fixes for edge cases that aren't obvious
 - Intentional workarounds
-- Dependencies between files
+- Security-critical patterns (SQL injection prevention, etc.)
+- Performance tuning that looks "overengineered"
+
+## Example: Protecting Critical Code
+
+```bash
+# Money calculations - integers avoid floating point errors
+breadcrumb add ./src/utils/money.js "All money as integers (cents) to avoid floating point errors. Ceiling for tax is legally required."
+
+# API retry logic tuned for rate limiting
+breadcrumb add ./src/api/client.js "Retry delays tuned for rate limiting - 100ms/500ms/2s/5s matches API provider's backoff recommendations"
+
+# SQL injection prevention
+breadcrumb add ./src/db/query.js "CRITICAL: Parameterized queries prevent SQL injection. Never use string interpolation for values."
+```
+
+Now when an agent tries to "simplify" this code:
+
+| Request | Agent Response |
+|---------|----------------|
+| "Use floating point for money" | ❌ Refuses - cites precision errors |
+| "Simplify retry to fixed 1s delay" | ⚠️ Warns about rate limit tuning |
+| "Use template literals for SQL" | ❌ Hard refuses - SQL injection risk |
+| "Do a full code review and simplify" | ✅ Reports all code is intentionally designed |
 
 ## Commands
 
@@ -77,10 +100,11 @@ For Claude Code users, the plugin auto-shows notes when reading files:
 /plugin install breadcrumb@breadcrumb-marketplace
 ```
 
-When an agent reads a file with notes, they see:
-```
-📝 Regex handles unicode edge cases, don't simplify
-```
+The plugin:
+- Auto-installs the CLI if not present
+- Auto-initializes `.breadcrumbs.json` on session start
+- Injects notes into Claude's context when reading files
+- Claude acknowledges notes when they conflict with the current task
 
 ## Vendor Agnostic
 
@@ -106,8 +130,8 @@ Notes are stored in `.breadcrumbs.json` at repo root:
   "breadcrumbs": [
     {
       "id": "b_1a2b3c",
-      "path": "src/parser.ts",
-      "message": "Regex handles unicode edge cases, don't simplify",
+      "path": "src/utils/money.js",
+      "message": "All money as integers (cents) to avoid floating point errors",
       "severity": "info",
       "added_at": "2026-01-10T14:30:00Z"
     }
