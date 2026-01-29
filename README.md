@@ -4,22 +4,9 @@
 
 When Agent A refactors auth, Agent B (in a different session, or even the same session later) has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and simplifies it, breaking a unicode edge case that took hours to debug.
 
-Breadcrumb fixes this. It's a file-attached context layer that surfaces warnings *at the moment an agent tries to touch a file*.
+Humans solve this with tribal knowledge. "Oh yeah, don't touch that file, Jake is migrating it." But agents don't have tribal knowledge. They see the code, they see the task, they act.
 
-```bash
-# Agent A leaves a warning
-breadcrumb add ./src/auth/legacy.ts "Migration in progress, don't touch until OAuth2 is live"
-
-# Agent B checks before editing (or this happens automatically via hook)
-breadcrumb check ./src/auth/legacy.ts
-# Exit code 1 (warn) → proceed with caution
-```
-
-## The Problem
-
-Humans solve cross-session coordination with tribal knowledge. "Oh yeah, don't touch that file, Jake is migrating it." But agents don't have access to tribal knowledge. They see the code, they see the task, they act.
-
-**What exists today doesn't work:**
+**Existing solutions don't work:**
 
 | Solution | Why it fails |
 |----------|--------------|
@@ -29,7 +16,16 @@ Humans solve cross-session coordination with tribal knowledge. "Oh yeah, don't t
 | CLAUDE.md | Project-wide, not file-specific. Can't say "this specific file is mid-refactor." |
 | Human memory | Agents don't have it. |
 
-Breadcrumb is the missing link between "comment in code" and "formal access control."
+**Breadcrumb fixes this.** It's a file-attached context layer that surfaces warnings *at the moment an agent tries to touch a file*—the missing link between "comment in code" and "formal access control."
+
+```bash
+# Agent A leaves a warning
+breadcrumb add ./src/auth/legacy.ts "Migration in progress, don't touch until OAuth2 is live"
+
+# Agent B checks before editing (or this happens automatically via hook)
+breadcrumb check ./src/auth/legacy.ts
+# Exit code 1 (warn) → proceed with caution
+```
 
 ## Three Core Use Cases
 
