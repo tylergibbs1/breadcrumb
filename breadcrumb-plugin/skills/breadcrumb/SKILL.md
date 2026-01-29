@@ -65,7 +65,7 @@ Note: You can use `info` or `warn` severity. Only humans can use `stop`.
 
 - `--session $CLAUDE_SESSION_ID` - Expires when your session ends (default for agents)
 - `--ttl 2h` - Expires after duration (30m, 2h, 7d)
-- `--expires 2024-06-01` - Expires on specific date
+- `--expires 2026-06-01` - Expires on specific date
 - No flag - Permanent until manually removed
 
 ## Note

@@ -1,10 +1,10 @@
 {
   "name": "breadcrumb",
   "description": "Check for file warnings and institutional knowledge before reading or modifying files",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "author": {
-    "name": "Breadcrumb"
+    "name": "Tyler Gibbs"
   },
-  "repository": "https://github.com/breadcrumb/breadcrumb",
-  "homepage": "https://breadcrumb.dev"
+  "repository": "https://github.com/tylergibbs1/breadcrumb",
+  "homepage": "https://github.com/tylergibbs1/breadcrumb"
 }
