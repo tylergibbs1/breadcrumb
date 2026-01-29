@@ -1,26 +1,3 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -f .breadcrumbs.json ] || breadcrumb init >/dev/null 2>&1 || true"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "file_path=$(cat | jq -r '.tool_input.file_path // empty'); if [ -n \"$file_path\" ] && [ -f .breadcrumbs.json ]; then result=$(breadcrumb check \"$file_path\" 2>/dev/null); notes=$(echo \"$result\" | jq -r 'if .breadcrumbs and (.breadcrumbs | length) > 0 then \"📝 NOTES: \" + (.breadcrumbs | map(.message) | join(\"; \")) else empty end'); [ -n \"$notes\" ] && echo \"$notes\"; fi; exit 0"
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": {}
 }
