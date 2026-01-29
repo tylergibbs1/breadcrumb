@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path // empty' | { read file_path; [ -n \"$file_path\" ] && breadcrumb check \"$file_path\" 2>/dev/null || true; }"
+            "command": "file_path=$(cat | jq -r '.tool_input.file_path // empty'); if [ -n \"$file_path\" ]; then result=$(breadcrumb check \"$file_path\" 2>/dev/null); status=$(echo \"$result\" | jq -r '.status // \"clear\"'); if [ \"$status\" = \"warn\" ]; then echo \"⚠️ BREADCRUMB WARNING: $(echo \"$result\" | jq -r '.suggestion')\"; exit 2; fi; fi"
           }
         ]
       }
