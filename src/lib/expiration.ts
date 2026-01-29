@@ -30,6 +30,8 @@ export function parseTtl(ttl: string): number {
 export function isDateExpired(breadcrumb: Breadcrumb): boolean {
   if (!breadcrumb.expires) return false;
   const expiryDate = new Date(breadcrumb.expires);
+  // Invalid date = treat as expired (fail-safe)
+  if (isNaN(expiryDate.getTime())) return true;
   return expiryDate < new Date();
 }
 
@@ -41,11 +43,14 @@ export function isTtlExpired(breadcrumb: Breadcrumb): boolean {
 
   try {
     const addedAt = new Date(breadcrumb.added_at).getTime();
+    // Invalid added_at = treat as expired (fail-safe)
+    if (isNaN(addedAt)) return true;
     const ttlMs = parseTtl(breadcrumb.ttl);
     const expiryTime = addedAt + ttlMs;
     return Date.now() > expiryTime;
   } catch {
-    return false;
+    // Malformed TTL = treat as expired (fail-safe, self-healing)
+    return true;
   }
 }
 

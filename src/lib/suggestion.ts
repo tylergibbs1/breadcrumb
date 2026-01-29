@@ -19,9 +19,15 @@ const ACTION_WORDS = [
   "prohibited",
 ];
 
+// Precompile regex patterns at module load
+const ACTION_PATTERNS = ACTION_WORDS.map(
+  (word) => new RegExp(`\\b(${word})\\b`, "gi")
+);
+
 function extractFirstSentence(message: string): string {
-  // Match first sentence ending with . ! or ?
-  const match = message.match(/^[^.!?]+[.!?]/);
+  // Match first sentence ending with . ! or ? followed by space or end
+  // This avoids splitting on periods in filenames like "config.json"
+  const match = message.match(/^.+?[.!?](?=\s|$)/);
   if (match) {
     return match[0].trim();
   }
@@ -34,9 +40,10 @@ function extractFirstSentence(message: string): string {
 
 function emphasizeActionWords(text: string): string {
   let result = text;
-  for (const word of ACTION_WORDS) {
-    const regex = new RegExp(`\\b(${word})\\b`, "gi");
-    result = result.replace(regex, (match) => match.toUpperCase());
+  for (const pattern of ACTION_PATTERNS) {
+    // Reset lastIndex since we reuse the regex
+    pattern.lastIndex = 0;
+    result = result.replace(pattern, (match) => match.toUpperCase());
   }
   return result;
 }

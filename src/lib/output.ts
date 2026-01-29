@@ -4,6 +4,10 @@ import type { Breadcrumb, CheckResult, ErrorResult, OutputFormat } from "./types
 export function getDefaultFormat(): OutputFormat {
   const envFormat = process.env.BREADCRUMB_FORMAT;
   if (envFormat === "pretty") return "pretty";
+  if (envFormat === "json") return "json";
+  if (envFormat) {
+    console.warn(`Unknown BREADCRUMB_FORMAT "${envFormat}", defaulting to json`);
+  }
   return "json";
 }
 
@@ -59,14 +63,16 @@ export function outputBreadcrumbList(
     return;
   }
 
+  const srcColWidth = 12; // Accommodate "human [HAS]"
+
   console.log(
     "ID".padEnd(10) +
       "Sev".padEnd(6) +
-      "Src".padEnd(7) +
+      "Src".padEnd(srcColWidth) +
       "Path".padEnd(35) +
       "Message"
   );
-  console.log("-".repeat(85));
+  console.log("-".repeat(90));
 
   for (const b of breadcrumbs) {
     const flags: string[] = [];
@@ -81,7 +87,7 @@ export function outputBreadcrumbList(
     console.log(
       b.id.padEnd(10) +
         b.severity.padEnd(6) +
-        (b.source + flagStr).padEnd(7) +
+        (b.source + flagStr).padEnd(srcColWidth) +
         path.padEnd(35) +
         message
     );
