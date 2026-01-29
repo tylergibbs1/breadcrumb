@@ -5,6 +5,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.0-black)](https://bun.sh/)
 
+![Breadcrumb Demo](public/demo.png)
+
 **Agents have no persistent memory across sessions and no way to communicate with each other.**
 
 When Agent A refactors auth, Agent B (in a different session, or even the same session later) has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and "simplifies" it, breaking a unicode edge case that took hours to debug.
