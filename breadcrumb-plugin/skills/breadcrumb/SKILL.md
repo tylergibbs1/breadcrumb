@@ -6,86 +6,69 @@ allowed-tools: Bash(breadcrumb *)
 
 # Breadcrumb
 
-Breadcrumb attaches warnings and context to file paths. Use it to communicate with other agents (or your future self in another session).
+Coordinate with other agents via file-attached warnings. The plugin automatically handles session tracking.
 
-## Checking files
+## Quick Reference
 
-Check a specific file:
+| Command | Purpose |
+|---------|---------|
+| `breadcrumb check ./file` | Check for warnings before editing |
+| `breadcrumb claim ./file "message"` | Mark file as work-in-progress |
+| `breadcrumb release ./file` | Release your claim |
+| `breadcrumb status` | See active claims |
+| `breadcrumb ls` | List all breadcrumbs |
+
+## Core Workflow
+
+**Before editing a file:**
 ```bash
-breadcrumb check ./path/to/file
+breadcrumb check ./src/api/users.ts
 ```
 
-Check a directory recursively:
+**Claim a file you're working on:**
 ```bash
-breadcrumb check ./src/ --recursive
+breadcrumb claim ./src/api/users.ts "Refactoring auth logic"
 ```
 
-List all breadcrumbs in the project:
-```bash
-breadcrumb ls
-```
-
-See active claims:
-```bash
-breadcrumb status
-```
-
-## Claiming files (work-in-progress)
-
-Claim a file you're actively working on:
-```bash
-breadcrumb claim ./src/api/users.ts "Refactoring in progress"
-```
-
-Claim with task context:
-```bash
-breadcrumb claim ./src/auth/ "Migrating to OAuth2" --task "Auth migration"
-```
-
-Release when done:
+**Release when done:**
 ```bash
 breadcrumb release ./src/api/users.ts
 ```
 
-Wait for a path to be clear:
+## Exit Codes
+
+- `0` = clear or info, safe to proceed
+- `1` = warning exists, read the `suggestion` field
+
+## Adding Permanent Context
+
+Leave notes for other agents about non-obvious code:
 ```bash
-breadcrumb wait ./src/auth/ --timeout 5m
+breadcrumb add ./src/billing/tax.ts "Ceiling division is intentional for compliance" --severity info
 ```
 
-## Adding breadcrumbs
-
-Leave context for other agents:
+Add a time-limited warning:
 ```bash
-# Short-lived warning
-breadcrumb add ./config/cache.yaml "Testing cache settings" --ttl 1h
-
-# Permanent context
-breadcrumb add ./src/utils/parser.ts "Handles unicode edge case, don't simplify" --severity info
-
-# Directory warning
-breadcrumb add ./vendor/ "Vendored deps, don't edit directly" --severity info
+breadcrumb add ./config/cache.yaml "Testing new settings" --ttl 1h
 ```
 
-## Interpreting results
+## Available Flags
 
-| Status | Exit Code | Meaning |
-|--------|-----------|---------|
-| `clear` | 0 | No warnings. Safe to proceed. |
-| `info` | 0 | Informational note. Read and proceed. |
-| `warn` | 1 | Warning exists. Proceed with caution. Follow the `suggestion`. |
+| Flag | Commands | Purpose |
+|------|----------|---------|
+| `--severity info\|warn` | add | Set warning level (default: warn) |
+| `--ttl 1h` | add, claim | Auto-expire after duration |
+| `--task "name"` | add, claim | Add task context |
+| `--recursive` | check | Check directory recursively |
+| `--active` | ls | Show only active claims |
 
-All breadcrumbs are advisory, not blocking.
+## Output Format
 
-## When to add breadcrumbs
+All commands output JSON. Parse the `suggestion` field for actionable guidance.
 
-- You're making changes that other agents should know about
-- You discover a non-obvious reason why code is written a certain way
-- You're in the middle of a multi-step refactor
-- A file has tricky edge cases that aren't obvious from the code
+## When to Use
 
-## Expiration options
-
-- Session-scoped (default for claims) - Expires when session ends
-- `--ttl 2h` - Expires after duration (30s, 5m, 2h, 7d)
-- `--expires 2026-06-01` - Expires on specific date
-- No flag - Permanent until manually removed
+- Check files before editing to avoid conflicts
+- Claim files during multi-step refactors
+- Leave context about non-obvious code behavior
+- Document gotchas that aren't obvious from the code

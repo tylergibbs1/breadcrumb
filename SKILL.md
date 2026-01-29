@@ -4,7 +4,7 @@ description: Agent-to-agent coordination via file-attached warnings. Check bread
 license: MIT
 metadata:
   author: tylergibbs1
-  version: "2.0.2"
+  version: "2.0.3"
   keywords:
     - agent-communication
     - file-warnings
@@ -15,100 +15,69 @@ metadata:
 
 # Breadcrumb
 
-Agent-to-agent coordination via file-attached warnings. Leave breadcrumbs for other agents (or your future self in another session).
+Coordinate with other agents via file-attached warnings. Session tracking is automatic when using the plugin.
 
-## When to use this skill
+## Quick Reference
 
-- Before editing a file, check if warnings exist
-- When starting work on a file, claim it as work-in-progress
-- When you discover non-obvious code behavior, leave context for others
-- When you want to coordinate with other agents across sessions
+| Command | Purpose |
+|---------|---------|
+| `breadcrumb check ./file` | Check for warnings before editing |
+| `breadcrumb claim ./file "message"` | Mark file as work-in-progress |
+| `breadcrumb release ./file` | Release your claim |
+| `breadcrumb status` | See active claims |
+| `breadcrumb ls` | List all breadcrumbs |
 
-## Commands
+## Core Workflow
 
-### Check a file before editing
-
+**Before editing a file:**
 ```bash
-breadcrumb check ./path/to/file
+breadcrumb check ./src/api/users.ts
 ```
 
-Exit codes:
-- `0` = clear or info (safe to proceed)
-- `1` = warning (proceed with caution)
-
-### Claim a file (work-in-progress)
-
+**Claim a file you're working on:**
 ```bash
-# Session-scoped claim (auto-cleans when session ends)
-breadcrumb claim ./src/api/users.ts "Refactoring in progress"
-
-# With task context
-breadcrumb claim ./src/auth/ "Migrating to OAuth2" --task "Auth migration"
-
-# TTL-based claim (outlasts session)
-breadcrumb claim ./config.yaml "Testing cache" --ttl 1h
+breadcrumb claim ./src/api/users.ts "Refactoring auth logic"
 ```
 
-### Release a claim
-
+**Release when done:**
 ```bash
 breadcrumb release ./src/api/users.ts
 ```
 
-### Wait for a path to be clear
+## Exit Codes
 
+- `0` = clear or info, safe to proceed
+- `1` = warning exists, read the `suggestion` field
+
+## Adding Permanent Context
+
+Leave notes for other agents about non-obvious code:
 ```bash
-breadcrumb wait ./src/api/ --timeout 5m --poll 5s
+breadcrumb add ./src/billing/tax.ts "Ceiling division is intentional for compliance" --severity info
 ```
 
-### Leave a breadcrumb
-
+Add a time-limited warning:
 ```bash
-# Session-scoped (auto-cleans when session ends)
-breadcrumb add ./src/api/users.ts "Refactoring in progress"
-
-# TTL-based (expires after duration)
-breadcrumb add ./config/cache.yaml "Testing cache settings" --ttl 1h
-
-# Permanent context
-breadcrumb add ./src/billing/tax.ts "Ceiling division intentional for compliance" --severity info
+breadcrumb add ./config/cache.yaml "Testing new settings" --ttl 1h
 ```
 
-### Check status
+## Available Flags
 
-```bash
-breadcrumb status
-```
+| Flag | Commands | Purpose |
+|------|----------|---------|
+| `--severity info\|warn` | add | Set warning level (default: warn) |
+| `--ttl 1h` | add, claim | Auto-expire after duration |
+| `--task "name"` | add, claim | Add task context |
+| `--recursive` | check | Check directory recursively |
+| `--active` | ls | Show only active claims |
 
-### List all breadcrumbs
+## Output Format
 
-```bash
-breadcrumb ls
-breadcrumb ls --active  # Only session-scoped claims
-```
+All commands output JSON. Parse the `suggestion` field for actionable guidance.
 
-### Remove a breadcrumb
+## When to Use
 
-```bash
-breadcrumb rm ./path/to/file
-```
-
-## Severity levels
-
-| Level | Meaning |
-|-------|---------|
-| `info` | Informational note (exit 0) |
-| `warn` | Warning, proceed with caution (exit 1) |
-
-## When to add breadcrumbs
-
-- You're making changes that other agents should know about
-- You discover a non-obvious reason why code is written a certain way
-- You're in the middle of a multi-step refactor
-- A file has tricky edge cases that aren't obvious from the code
-
-## Important
-
-Always check `breadcrumb check` exit codes:
-- Exit 1 means there's a warning. Read the suggestion and proceed carefully.
-- Exit 0 means clear or info, safe to proceed.
+- Check files before editing to avoid conflicts
+- Claim files during multi-step refactors
+- Leave context about non-obvious code behavior
+- Document gotchas that aren't obvious from the code
