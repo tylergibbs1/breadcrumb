@@ -2,22 +2,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Read|Edit|Write|View",
+        "matcher": "Read|Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.breadcrumb-plugin/hooks/check.sh\""
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "BREADCRUMB_SESSION_ID=\"$CLAUDE_SESSION_ID\" breadcrumb session-end \"$CLAUDE_SESSION_ID\""
+            "command": "breadcrumb check \"$TOOL_INPUT_FILE_PATH\" 2>/dev/null || true"
           }
         ]
       }

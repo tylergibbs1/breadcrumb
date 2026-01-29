@@ -1,27 +1,10 @@
 {
   "name": "breadcrumb",
   "description": "Check for file warnings and coordinate work-in-progress before reading or modifying files",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "author": {
     "name": "Tyler Gibbs"
   },
   "repository": "https://github.com/tylergibbs1/breadcrumb",
-  "homepage": "https://github.com/tylergibbs1/breadcrumb",
-  "hooks": [
-    {
-      "event": "PreToolUse:Read",
-      "script": "./hooks/check.sh",
-      "blocking": false
-    },
-    {
-      "event": "PreToolUse:Edit",
-      "script": "./hooks/check.sh",
-      "blocking": false
-    },
-    {
-      "event": "PreToolUse:Write",
-      "script": "./hooks/check.sh",
-      "blocking": false
-    }
-  ]
+  "homepage": "https://github.com/tylergibbs1/breadcrumb"
 }
