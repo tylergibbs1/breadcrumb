@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -f .breadcrumbs.json ] || breadcrumb init 2>/dev/null || true"
+            "command": "[ -f .breadcrumbs.json ] || breadcrumb init >/dev/null 2>&1; echo '📌 BREADCRUMB ACTIVE: Before modifying files, run `breadcrumb claim <file> \"task description\"` to prevent conflicts with other agents. Run `breadcrumb release <file>` when done.'"
           }
         ]
       }
