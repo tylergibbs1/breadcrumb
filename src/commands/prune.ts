@@ -1,6 +1,8 @@
 import type { Command } from "commander";
 import { findConfigPath, isExpired, loadConfig, saveConfig } from "../lib/config.js";
-import { outputError, outputJson } from "../lib/output.js";
+import { getExpirationInfo } from "../lib/expiration.js";
+import { outputJson } from "../lib/output.js";
+import type { Breadcrumb } from "../lib/types.js";
 
 export function registerPruneCommand(program: Command): void {
   program
@@ -11,30 +13,48 @@ export function registerPruneCommand(program: Command): void {
       const configPath = findConfigPath();
 
       if (!configPath) {
-        outputError(
-          "NO_CONFIG",
-          "No .breadcrumbs.json found. Run 'breadcrumb init' first."
-        );
-        process.exit(1);
+        // No config = nothing to prune (idempotent cleanup)
+        outputJson({
+          success: true,
+          removed: 0,
+          remaining: 0,
+        });
+        return;
       }
 
       try {
         const config = loadConfig(configPath);
 
-        const expired = config.breadcrumbs.filter((b) => isExpired(b));
-        const remaining = config.breadcrumbs.filter((b) => !isExpired(b));
+        // Single-pass partitioning (avoids calling isExpired twice per breadcrumb)
+        const expired: Breadcrumb[] = [];
+        const remaining: Breadcrumb[] = [];
+
+        for (const b of config.breadcrumbs) {
+          if (isExpired(b)) {
+            expired.push(b);
+          } else {
+            remaining.push(b);
+          }
+        }
 
         if (options.dryRun) {
           outputJson({
             dryRun: true,
             wouldRemove: expired.length,
-            expired: expired.map((b) => ({ id: b.id, path: b.path, expires: b.expires })),
+            expired: expired.map((b) => ({
+              id: b.id,
+              path: b.path,
+              expiration: getExpirationInfo(b),
+            })),
           });
           return;
         }
 
-        config.breadcrumbs = remaining;
-        saveConfig(configPath, config);
+        // Only save if something changed
+        if (expired.length > 0) {
+          config.breadcrumbs = remaining;
+          saveConfig(configPath, config);
+        }
 
         outputJson({
           success: true,
@@ -42,10 +62,10 @@ export function registerPruneCommand(program: Command): void {
           remaining: remaining.length,
         });
       } catch (error) {
-        outputError(
-          "PRUNE_FAILED",
-          error instanceof Error ? error.message : "Failed to prune breadcrumbs"
-        );
+        outputJson({
+          success: false,
+          error: error instanceof Error ? error.message : "Failed to prune breadcrumbs",
+        });
         process.exit(1);
       }
     });

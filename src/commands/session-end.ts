@@ -9,6 +9,12 @@ export function registerSessionEndCommand(program: Command): void {
     .description("Clean up breadcrumbs for a finished session")
     .argument("<session-id>", "Session ID to clean up")
     .action((sessionId) => {
+      // Validate session ID
+      if (!sessionId || !sessionId.trim()) {
+        outputError("INVALID_SESSION", "Session ID cannot be empty");
+        process.exit(1);
+      }
+
       const configPath = findConfigPath();
 
       if (!configPath) {
