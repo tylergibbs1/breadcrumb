@@ -1,30 +1,22 @@
 ---
 name: breadcrumb
-description: ALWAYS invoke this skill before editing, writing, or modifying any file. Also invoke when starting a multi-file task to claim files, and when finishing work to release claims.
+description: Use when refactoring code, making changes to files, updating code, modifying functions, or doing any multi-step coding task. Coordinates work between agents to prevent conflicts.
 allowed-tools: Bash(breadcrumb *)
 ---
 
 # Breadcrumb - Agent Coordination
 
-You MUST use breadcrumb to coordinate with other agents.
+You MUST use breadcrumb commands to coordinate with other agents working on this codebase.
 
-## Before editing ANY file
+## When starting ANY coding task
 
-```bash
-breadcrumb check ./path/to/file
-```
-
-If status is "warn", tell the user another agent is working on it and ask how to proceed.
-
-## When starting work on files
-
-Claim files you're about to modify:
+FIRST, claim the files you'll modify:
 
 ```bash
-breadcrumb claim ./path/to/file "Brief description of what you're doing"
+breadcrumb claim ./path/to/file "Brief description of your task"
 ```
 
-## When finishing work
+## When finishing your task
 
 Release your claims:
 
@@ -32,12 +24,14 @@ Release your claims:
 breadcrumb release ./path/to/file
 ```
 
-## Commands
+## If you see a warning when editing
 
-| Command | Purpose |
-|---------|---------|
-| `breadcrumb check <path>` | Check for warnings before editing |
-| `breadcrumb claim <path> "message"` | Mark file as work-in-progress |
-| `breadcrumb release <path>` | Release your claim when done |
-| `breadcrumb status` | See all active work |
-| `breadcrumb add <path> "message" --severity info` | Leave permanent note |
+Another agent is working on that file. Ask the user how to proceed before making changes.
+
+## Quick reference
+
+| Command | When to use |
+|---------|-------------|
+| `breadcrumb claim <path> "message"` | Before starting work on a file |
+| `breadcrumb release <path>` | After finishing work |
+| `breadcrumb status` | To see what's being worked on |
