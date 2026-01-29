@@ -240,7 +240,7 @@ Breadcrumbs are stored in `.breadcrumbs.json` at repo root:
       "severity": "warn",
       "message": "Migration in progress",
       "added_by": {
-        "agent_id": "claude",
+        "agent_id": "agent",
         "session_id": "sess_abc123",
         "task": "Auth migration"
       },
