@@ -23,7 +23,7 @@ export function registerReleaseCommand(program: Command): void {
         process.exit(1);
       }
 
-      const sessionId = process.env.BREADCRUMB_SESSION_ID;
+      const sessionId = process.env.BREADCRUMB_SESSION_ID || process.env.CLAUDE_SESSION_ID;
 
       try {
         const config = loadConfig(configPath);

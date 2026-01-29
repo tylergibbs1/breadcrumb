@@ -93,7 +93,7 @@ export function registerAddCommand(program: Command): void {
         }
 
         const patternType = detectPatternType(path);
-        const sessionId = options.session || process.env.BREADCRUMB_SESSION_ID;
+        const sessionId = options.session || process.env.BREADCRUMB_SESSION_ID || process.env.CLAUDE_SESSION_ID;
 
         const breadcrumb: Breadcrumb = {
           id: generateId(),

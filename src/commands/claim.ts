@@ -31,11 +31,11 @@ export function registerClaimCommand(program: Command): void {
         process.exit(1);
       }
 
-      const sessionId = process.env.BREADCRUMB_SESSION_ID;
+      const sessionId = process.env.BREADCRUMB_SESSION_ID || process.env.CLAUDE_SESSION_ID;
       if (!sessionId && !options.ttl) {
         outputError(
           "NO_SESSION",
-          "BREADCRUMB_SESSION_ID environment variable is required for claim (or use --ttl to create a time-limited claim)"
+          "Session ID required for claim (set BREADCRUMB_SESSION_ID or use --ttl for time-limited claim)"
         );
         process.exit(1);
       }
