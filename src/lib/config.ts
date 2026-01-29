@@ -82,7 +82,7 @@ export interface BuildAddedByOptions {
 }
 
 export function buildAddedBy(options: BuildAddedByOptions = {}): AddedBy {
-  const agentId = process.env.BREADCRUMB_AUTHOR || "agent";
+  const agentId = process.env.BREADCRUMB_AUTHOR || "claude";
   const addedBy: AddedBy = { agent_id: agentId };
 
   if (options.sessionId) {
