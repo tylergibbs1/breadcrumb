@@ -172,53 +172,6 @@ breadcrumb add ./vendor/ "Vendored deps, don't edit"
 breadcrumb add "*.generated.ts" "Auto-generated, edit templates instead"
 ```
 
-## Agent Integration
-
-### Python example
-
-```python
-import subprocess
-import json
-import os
-
-SESSION_ID = os.environ.get("CLAUDE_SESSION_ID", "unknown")
-
-def check_before_edit(path: str):
-    """Check breadcrumbs before file operation."""
-    result = subprocess.run(
-        ["breadcrumb", "check", path],
-        capture_output=True, text=True
-    )
-
-    if result.returncode == 2:
-        # Blocked by human
-        data = json.loads(result.stdout)
-        raise Exception(f"Blocked: {data['suggestion']}")
-
-    if result.returncode == 1:
-        # Warning - log and proceed with caution
-        data = json.loads(result.stdout)
-        print(f"Warning: {data['suggestion']}")
-
-def leave_breadcrumb(path: str, message: str, ttl: str = None):
-    """Leave a breadcrumb for other agents."""
-    cmd = ["breadcrumb", "add", path, message, "--source", "agent"]
-
-    if ttl:
-        cmd.extend(["--ttl", ttl])
-    else:
-        cmd.extend(["--session", SESSION_ID])
-
-    subprocess.run(cmd)
-```
-
-### Using guard
-
-```bash
-# Only runs if breadcrumb allows
-breadcrumb guard ./secrets.env -- cat ./secrets.env
-```
-
 ## Claude Code Plugin (Optional)
 
 For Claude Code users, an optional plugin adds **automatic enforcement**:
