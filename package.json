@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun run src/index.ts",
-    "build": "bun build src/index.ts --compile --outfile dist/breadcrumb",
+    "build": "bun build src/index.ts --outfile dist/index.js --target=node",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
