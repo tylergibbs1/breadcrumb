@@ -28,7 +28,7 @@ breadcrumb check ./src/auth/legacy.ts
 
 ```bash
 breadcrumb claim ./src/auth/ "Refactoring auth module"
-# Default 2h TTL, or auto-cleans with session
+# 2h TTL by default; auto-cleans if session ID set
 
 # Other agents wait for it to be clear
 breadcrumb wait ./src/auth/ --timeout 5m
