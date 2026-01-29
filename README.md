@@ -1,5 +1,10 @@
 # Breadcrumb
 
+[![npm version](https://img.shields.io/npm/v/breadcrumb.svg)](https://www.npmjs.com/package/breadcrumb)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-1.0+-f9f1e1.svg)](https://bun.sh/)
+
 **Agents have no persistent memory across sessions and no way to communicate with each other.**
 
 When Agent A refactors auth, Agent B (in a different session, or even the same session later) has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and simplifies it, breaking a unicode edge case that took hours to debug.
@@ -149,7 +154,7 @@ breadcrumb add ./src/api.ts "Refactoring" --session $CLAUDE_SESSION_ID
 breadcrumb add ./config.yaml "Testing" --ttl 2h
 
 # Date-based (expires on specific date)
-breadcrumb add ./api/v2/ "Unstable" --expires 2024-06-01
+breadcrumb add ./api/v2/ "Unstable" --expires 2026-06-01
 
 # Permanent (until manually removed)
 breadcrumb add ./vendor/ "Don't edit"
@@ -224,7 +229,7 @@ Breadcrumbs are stored in `.breadcrumbs.json` at repo root:
       "message": "Migration in progress",
       "source": "agent",
       "session_id": "sess_abc123",
-      "added_at": "2024-01-10T14:30:00Z"
+      "added_at": "2026-01-10T14:30:00Z"
     }
   ]
 }

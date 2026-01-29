@@ -2,10 +2,35 @@
   "name": "breadcrumb",
   "version": "1.0.0",
   "description": "Agent-first CLI tool for attaching contextual warnings to file paths",
+  "author": "Tyler Gibbs",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "breadcrumb": "dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tylergibbs1/breadcrumb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tylergibbs1/breadcrumb/issues"
+  },
+  "homepage": "https://github.com/tylergibbs1/breadcrumb#readme",
+  "keywords": [
+    "cli",
+    "agent",
+    "ai",
+    "llm",
+    "claude",
+    "warnings",
+    "file-context",
+    "developer-tools",
+    "coordination",
+    "session-management"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "dev": "bun run src/index.ts",
