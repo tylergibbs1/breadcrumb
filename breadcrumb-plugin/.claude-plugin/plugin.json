@@ -1,7 +1,7 @@
 {
   "name": "breadcrumb",
   "description": "Check for file warnings and coordinate work-in-progress before reading or modifying files",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "author": {
     "name": "Tyler Gibbs"
   },
