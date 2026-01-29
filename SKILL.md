@@ -4,7 +4,7 @@ description: Coordinate with other agents via file-attached warnings. Check befo
 license: MIT
 metadata:
   author: tylergibbs1
-  version: "2.1.0"
+  version: "2.1.1"
   keywords:
     - agent-communication
     - file-warnings
