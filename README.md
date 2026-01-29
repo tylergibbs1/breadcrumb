@@ -80,6 +80,10 @@ Now when an agent tries to "simplify" this code:
 | "Use template literals for SQL" | ❌ Hard refuses - SQL injection risk |
 | "Do a full code review and simplify" | ✅ Reports all code is intentionally designed |
 
+![Claude refusing to use floating point](public/demo.png)
+
+![Claude warning about tax rounding](public/tax-warning.png)
+
 ## Commands
 
 | Command | Description |
