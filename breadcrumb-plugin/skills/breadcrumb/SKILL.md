@@ -6,7 +6,7 @@ allowed-tools: Bash(breadcrumb *)
 
 # Breadcrumb
 
-Prevent conflicts between agents working on the same codebase. Session tracking is automatic.
+Prevent conflicts between agents working on the same codebase.
 
 ## When to use each command
 
@@ -30,6 +30,7 @@ breadcrumb check ./src/api/users.ts
 ```bash
 breadcrumb claim ./src/api/users.ts "Refactoring auth logic"
 ```
+Claims auto-expire after 2 hours by default.
 
 **3. Release when done:**
 ```bash
@@ -38,7 +39,7 @@ breadcrumb release ./src/api/users.ts
 
 ## Leaving permanent notes
 
-For context that should persist beyond your session:
+For context that should persist:
 ```bash
 breadcrumb add ./src/billing/tax.ts "Ceiling division is intentional for compliance" --severity info
 ```
@@ -48,7 +49,7 @@ breadcrumb add ./src/billing/tax.ts "Ceiling division is intentional for complia
 | Command | Arguments | Purpose |
 |---------|-----------|---------|
 | `check <path>` | `--recursive` | Check path for warnings |
-| `claim <path> [message]` | `--task`, `--ttl` | Mark as work-in-progress |
+| `claim <path> [message]` | `--task`, `--ttl` | Mark as work-in-progress (default: 2h TTL) |
 | `release <path>` | | Release your claim |
 | `status` | | Overview of active work |
 | `add <path> <message>` | `--severity`, `--ttl`, `--task` | Leave permanent context |

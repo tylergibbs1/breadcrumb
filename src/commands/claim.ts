@@ -15,7 +15,7 @@ import type { Breadcrumb } from "../lib/types.js";
 export function registerClaimCommand(program: Command): void {
   program
     .command("claim")
-    .description("Claim a path as work-in-progress (session-scoped by default)")
+    .description("Claim a path as work-in-progress")
     .argument("<path>", "File path, directory, or glob pattern to claim")
     .argument("[message]", "Optional message (default: 'Work in progress')")
     .option("-t, --task <task>", "Task description for context")
@@ -32,18 +32,15 @@ export function registerClaimCommand(program: Command): void {
       }
 
       const sessionId = process.env.BREADCRUMB_SESSION_ID || process.env.CLAUDE_SESSION_ID;
-      if (!sessionId && !options.ttl) {
-        outputError(
-          "NO_SESSION",
-          "Session ID required for claim (set BREADCRUMB_SESSION_ID or use --ttl for time-limited claim)"
-        );
-        process.exit(1);
-      }
 
-      // Validate TTL if provided
-      if (options.ttl) {
+      // Default TTL when no session ID available (platform-agnostic)
+      const DEFAULT_TTL = "2h";
+      const ttl = options.ttl || (!sessionId ? DEFAULT_TTL : undefined);
+
+      // Validate TTL if we have one
+      if (ttl) {
         try {
-          parseTtl(options.ttl);
+          parseTtl(ttl);
         } catch (error) {
           outputError(
             "INVALID_TTL",
@@ -86,9 +83,9 @@ export function registerClaimCommand(program: Command): void {
           breadcrumb.session_id = sessionId;
         }
 
-        // TTL overrides session scoping for outlasting the session
-        if (options.ttl) {
-          breadcrumb.ttl = options.ttl;
+        // TTL for expiration
+        if (ttl) {
+          breadcrumb.ttl = ttl;
         }
 
         config.breadcrumbs.push(breadcrumb);
