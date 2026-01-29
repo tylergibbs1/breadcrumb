@@ -4,7 +4,7 @@ description: Agent-to-agent communication via file-attached warnings. Check brea
 license: MIT
 metadata:
   author: tylergibbs1
-  version: "1.0.6"
+  version: "1.0.7"
   keywords:
     - agent-communication
     - file-warnings
