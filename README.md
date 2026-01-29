@@ -177,6 +177,11 @@ breadcrumb add "*.generated.ts" "Auto-generated, edit templates instead"
 For Claude Code users, an optional plugin adds **automatic enforcement**:
 
 ```bash
+# Install from marketplace
+/plugin marketplace add tylergibbs1/breadcrumb
+/plugin install breadcrumb@breadcrumb-marketplace
+
+# Or load locally
 claude --plugin-dir ./breadcrumb-plugin
 ```
 
@@ -187,8 +192,6 @@ claude --plugin-dir ./breadcrumb-plugin
 | Session cleanup | Manual | Automatic (SessionEnd hook) |
 
 Without the plugin, agents call `breadcrumb check` explicitly. With the plugin, it happens automatically before every file operation.
-
-See `breadcrumb-plugin/` for source.
 
 ## Design Philosophy
 

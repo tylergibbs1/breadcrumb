@@ -1,0 +1,27 @@
+{
+  "name": "breadcrumb-marketplace",
+  "owner": {
+    "name": "Tyler Gibbs",
+    "email": "tyler@breadcrumb.dev"
+  },
+  "metadata": {
+    "description": "Plugins for agent-to-agent communication via file-attached warnings",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "breadcrumb",
+      "source": "./breadcrumb-plugin",
+      "description": "Automatic breadcrumb enforcement for Claude Code. Checks file warnings before operations and cleans up session-scoped breadcrumbs.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Tyler Gibbs"
+      },
+      "homepage": "https://github.com/tylergibbs1/breadcrumb",
+      "repository": "https://github.com/tylergibbs1/breadcrumb",
+      "license": "MIT",
+      "keywords": ["breadcrumb", "warnings", "agent-communication", "file-context", "hooks"],
+      "category": "productivity"
+    }
+  ]
+}
