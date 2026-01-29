@@ -1,12 +1,20 @@
 ---
 name: breadcrumb
-description: Leave notes on files for other agents. Use when you want to explain why code looks a certain way, warn about edge cases, or leave context for future sessions.
+description: Leave notes on files for other agents to see in future sessions. Use after making non-obvious changes, fixing tricky bugs, or when code looks wrong but is intentional.
 allowed-tools: Bash(breadcrumb *)
 ---
 
 # Breadcrumb - File Notes
 
-Leave notes on files that other agents will see when they edit.
+Leave notes on files that persist across sessions.
+
+## When to use
+
+After making changes that future agents might misunderstand:
+- Non-obvious code that looks like it could be simplified
+- Bug fixes for edge cases
+- Intentional workarounds
+- Dependencies between files
 
 ## Add a note
 
@@ -17,20 +25,16 @@ breadcrumb add ./path/to/file "Your note here"
 ## Examples
 
 ```bash
-# Explain intentional complexity
-breadcrumb add ./src/utils/parser.ts "Regex handles unicode edge cases, don't simplify"
-
-# Warn about dependencies
-breadcrumb add ./src/api/auth.ts "OAuth flow depends on specific token format"
-
-# Leave context
-breadcrumb add ./config/db.ts "Connection pooling tuned for production load"
+breadcrumb add ./src/parser.ts "Regex handles unicode edge cases, don't simplify"
+breadcrumb add ./src/auth.ts "OAuth flow depends on specific token format"
+breadcrumb add ./src/tax.ts "Ceiling division intentional for compliance"
 ```
 
-## Other commands
+## Commands
 
 | Command | Purpose |
 |---------|---------|
+| `breadcrumb add <path> "note"` | Add a note |
+| `breadcrumb check <path>` | See notes on a file |
 | `breadcrumb ls` | List all notes |
 | `breadcrumb rm <path>` | Remove a note |
-| `breadcrumb check <path>` | See notes on a file |
