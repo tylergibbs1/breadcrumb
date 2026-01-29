@@ -1,5 +1,6 @@
 import fg from "fast-glob";
-import { normalize, resolve } from "node:path";
+import { minimatch } from "minimatch";
+import { basename, normalize, resolve } from "node:path";
 import { isExpired } from "./expiration.js";
 import type { Breadcrumb, PatternType } from "./types.js";
 
@@ -37,13 +38,32 @@ export function matchesPath(breadcrumb: Breadcrumb, targetPath: string): boolean
     }
 
     case "glob": {
-      // Use fast-glob for pattern matching
-      const matches = fg.sync(breadcrumb.path, {
-        absolute: true,
-        onlyFiles: false,
-        dot: true,
-      });
-      return matches.some((match) => normalize(match) === normalizedTarget);
+      // Use minimatch for pattern matching (doesn't require file to exist)
+      const pattern = breadcrumb.path;
+      const filename = basename(normalizedTarget);
+
+      // Normalize the target path to a relative form for matching
+      let relativePath = targetPath;
+      if (relativePath.startsWith("./")) {
+        relativePath = relativePath.slice(2);
+      }
+      if (relativePath.startsWith("/")) {
+        // Convert absolute path to relative from cwd
+        const cwd = process.cwd();
+        if (normalizedTarget.startsWith(cwd)) {
+          relativePath = normalizedTarget.slice(cwd.length + 1);
+        }
+      }
+
+      const opts = { dot: true, matchBase: false };
+
+      // For simple patterns without path separators (e.g., *.ts), match filename
+      if (!pattern.includes("/")) {
+        return minimatch(filename, pattern, opts);
+      }
+
+      // For patterns with paths (e.g., src/**/*.ts), match relative path
+      return minimatch(relativePath, pattern, opts);
     }
 
     default:
