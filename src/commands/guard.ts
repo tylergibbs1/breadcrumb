@@ -73,24 +73,41 @@ export function registerGuardCommand(program: Command): void {
         });
 
         // Forward signals to child to prevent zombie processes
+        const signalHandlers: Array<[NodeJS.Signals, () => void]> = [];
         const forwardSignal = (signal: NodeJS.Signals) => {
           if (child.exitCode === null) {
             child.kill(signal);
           }
         };
-        process.on("SIGINT", () => forwardSignal("SIGINT"));
-        process.on("SIGTERM", () => forwardSignal("SIGTERM"));
-        process.on("SIGHUP", () => forwardSignal("SIGHUP"));
+        for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"] as const) {
+          const handler = () => forwardSignal(sig);
+          signalHandlers.push([sig, handler]);
+          process.on(sig, handler);
+        }
+
+        const cleanup = () => {
+          for (const [sig, handler] of signalHandlers) {
+            process.off(sig, handler);
+          }
+        };
 
         child.on("error", (error) => {
+          cleanup();
           outputError("COMMAND_FAILED", `Failed to run command: ${error.message}`);
           process.exit(1);
         });
 
         child.on("exit", (code, signal) => {
+          cleanup();
           if (signal) {
             // Standard convention: 128 + signal number
-            process.exit(128 + 1);
+            const signalNumbers: Record<string, number> = {
+              SIGHUP: 1,
+              SIGINT: 2,
+              SIGQUIT: 3,
+              SIGTERM: 15,
+            };
+            process.exit(128 + (signalNumbers[signal] ?? 1));
           }
           process.exit(code ?? 0);
         });
