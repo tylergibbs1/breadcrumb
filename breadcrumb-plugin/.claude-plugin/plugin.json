@@ -1,0 +1,10 @@
+{
+  "name": "breadcrumb",
+  "description": "Check for file warnings and institutional knowledge before reading or modifying files",
+  "version": "1.0.0",
+  "author": {
+    "name": "Breadcrumb"
+  },
+  "repository": "https://github.com/breadcrumb/breadcrumb",
+  "homepage": "https://breadcrumb.dev"
+}
