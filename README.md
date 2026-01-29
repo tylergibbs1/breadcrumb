@@ -7,14 +7,14 @@
 
 ![Breadcrumb Demo](public/demo.png)
 
-**Leave notes on files for AI agents.**
+**Agents leave notes for other agents.**
 
 When an agent fixes a tricky bug or writes code that looks wrong but is intentional, the next agent has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and "simplifies" it, breaking a unicode edge case that took hours to debug.
 
-Breadcrumb fixes this. Leave a note on a file, and agents see it when they read it.
+Breadcrumb fixes this. Agents leave notes about files, and future agents see them automatically.
 
 ```bash
-# Leave a note
+# Agent leaves a note after fixing a tricky bug
 breadcrumb add ./src/parser.ts "Regex handles unicode edge cases, don't simplify"
 
 # Future agent reads the file → sees the note automatically
@@ -37,7 +37,7 @@ bun add -g breadcrumb-cli
 # Initialize in your repo
 breadcrumb init
 
-# Add a note to a file
+# Add a note about a file
 breadcrumb add ./src/auth.ts "OAuth flow depends on specific token format"
 
 # See notes on a file
@@ -49,6 +49,14 @@ breadcrumb ls
 # Remove a note
 breadcrumb rm ./src/auth.ts
 ```
+
+## Why Not Just Use Comments?
+
+Comments are passive — they sit in a file hoping to be noticed. Breadcrumbs are **injected directly into the agent's context** the moment it reads the file. They can't be skimmed over or missed.
+
+Also:
+- **Comments aren't discoverable** — `breadcrumb ls` shows all notes in a repo
+- **Comments can't span files** — One breadcrumb can cover an entire directory
 
 ## When to Leave Notes
 
@@ -89,7 +97,7 @@ Now when an agent tries to "simplify" this code:
 | Command | Description |
 |---------|-------------|
 | `init` | Create `.breadcrumbs.json` in current repo |
-| `add <path> <message>` | Add a note to a file |
+| `add <path> <message>` | Add a note about a file |
 | `check <path>` | See notes on a file |
 | `ls` | List all notes |
 | `rm <path>` | Remove a note |
