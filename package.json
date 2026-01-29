@@ -1,6 +1,6 @@
 {
   "name": "breadcrumb-cli",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Agent-to-agent coordination via file-attached warnings",
   "author": "Tyler Gibbs",
   "license": "MIT",
