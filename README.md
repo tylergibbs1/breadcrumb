@@ -7,98 +7,19 @@
 
 ![Breadcrumb Demo](public/demo.png)
 
-**Agents have no persistent memory across sessions and no way to communicate with each other.**
+**Leave notes on files for other agents.**
 
-When Agent A refactors auth, Agent B (in a different session, or even the same session later) has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and "simplifies" it, breaking a unicode edge case that took hours to debug.
+When you fix a tricky bug or write code that looks wrong but is intentional, the next agent has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and "simplifies" it, breaking a unicode edge case that took hours to debug.
 
-Breadcrumb fixes this. It's a coordination layer that surfaces warnings when an agent touches a file, enabling agent-to-agent communication across sessions.
-
-```bash
-# Agent A claims a file as work-in-progress
-breadcrumb claim ./src/auth/legacy.ts "Migration in progress"
-
-# Agent B checks before editing (or this happens automatically via hook)
-breadcrumb check ./src/auth/legacy.ts
-# Exit code 1 (warn) → proceed with caution
-```
-
-## Three Core Use Cases
-
-### 1. Work-in-progress coordination
-
-*"I'm actively refactoring this, don't touch it"*
+Breadcrumb fixes this. Leave a note, and future agents see it when they read the file.
 
 ```bash
-breadcrumb claim ./src/auth/ "Refactoring auth module"
-# 2h TTL by default; auto-cleans if session ID set
+# Leave a note
+breadcrumb add ./src/parser.ts "Regex handles unicode edge cases, don't simplify"
 
-# Other agents wait for it to be clear
-breadcrumb wait ./src/auth/ --timeout 5m
+# Future agent reads the file → sees the note automatically
+📝 Regex handles unicode edge cases, don't simplify
 ```
-
-### 2. Preserved context
-
-*"This looks wrong but it's intentional"*
-
-```bash
-breadcrumb add ./src/billing/tax.ts \
-  "Ceiling division is intentional for tax compliance" \
-  --ttl 30d --severity info
-```
-
-### 3. Task coordination
-
-*"Here's what I'm working on and why"*
-
-```bash
-breadcrumb claim ./src/api/ --task "Implementing rate limiting"
-
-# See what everyone's working on
-breadcrumb status
-```
-
-## How It Works
-
-Breadcrumb attaches warnings to file paths. When an agent checks a path, they get:
-
-- **Status**: `clear`, `info`, or `warn`
-- **Exit code**: `0` (safe) or `1` (warning)
-- **Suggestion**: Actionable guidance
-
-```bash
-$ breadcrumb check ./src/auth/legacy.ts
-{
-  "status": "warn",
-  "path": "./src/auth/legacy.ts",
-  "breadcrumbs": [...],
-  "suggestion": "Proceed with caution. Migration in progress."
-}
-$ echo $?
-1
-```
-
-All breadcrumbs are **advisory, not blocking**. Agents can always proceed if they determine it's appropriate. This prevents deadlocks while encouraging coordination.
-
-## Vendor Agnostic
-
-Breadcrumb works with **any AI agent system** that can run shell commands—not just Claude Code.
-
-| Component | Vendor-specific? |
-|-----------|------------------|
-| CLI (`breadcrumb`) | No - works everywhere |
-| `.breadcrumbs.json` | No - plain JSON |
-| Claude Code plugin | Yes - optional integration |
-
-**Using with other tools:**
-
-1. Install the CLI globally
-2. Add breadcrumb commands to your agent's system prompt or CLAUDE.md equivalent:
-   - Run `breadcrumb check <file>` before editing
-   - Run `breadcrumb claim <file> "message"` when starting work
-   - Run `breadcrumb release <file>` when done
-3. Set `BREADCRUMB_SESSION_ID` env var for session-scoped claims (optional)
-
-The Claude Code plugin is just one integration. Cursor, Windsurf, Aider, or custom agent systems can integrate the same way.
 
 ## Installation
 
@@ -108,10 +29,6 @@ npm install -g breadcrumb-cli
 
 # bun
 bun add -g breadcrumb-cli
-
-# From source
-git clone https://github.com/tylergibbs1/breadcrumb
-cd breadcrumb && bun install && bun run build
 ```
 
 ## Quick Start
@@ -120,136 +37,68 @@ cd breadcrumb && bun install && bun run build
 # Initialize in your repo
 breadcrumb init
 
-# Claim a file as work-in-progress
-breadcrumb claim ./src/auth/legacy.ts "Refactoring"
+# Add a note to a file
+breadcrumb add ./src/auth.ts "OAuth flow depends on specific token format"
 
-# Check before editing
-breadcrumb check ./src/auth/legacy.ts
+# See notes on a file
+breadcrumb check ./src/auth.ts
 
-# See what's being worked on
-breadcrumb status
+# List all notes
+breadcrumb ls
 
-# Release when done
-breadcrumb release ./src/auth/legacy.ts
+# Remove a note
+breadcrumb rm ./src/auth.ts
 ```
+
+## When to Leave Notes
+
+- Code that looks like it could be simplified but shouldn't be
+- Bug fixes for edge cases that aren't obvious
+- Intentional workarounds
+- Dependencies between files
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
 | `init` | Create `.breadcrumbs.json` in current repo |
-| `claim <path> [message]` | Claim a path as work-in-progress (default: 2h TTL) |
-| `release <path>` | Release a claimed path |
-| `check <path>` | Check if a path has breadcrumbs |
-| `wait <path>` | Wait for a path to be clear |
-| `status` | Show overview of active claims |
-| `add <path> <message>` | Add a breadcrumb to a path |
-| `rm <path>` | Remove a breadcrumb |
-| `ls` | List all breadcrumbs |
-| `prune` | Remove expired breadcrumbs |
-| `session-end <id>` | Clean up session-scoped breadcrumbs |
-
-## Severity Levels
-
-| Level | Exit Code | Use case |
-|-------|-----------|----------|
-| `info` | 0 | Context, documentation, FYI |
-| `warn` | 1 | Active work, proceed with caution |
-
-## Expiration
-
-Breadcrumbs expire automatically to prevent accumulation:
-
-```bash
-# TTL-based (default for claims: 2h)
-breadcrumb claim ./src/api.ts "Refactoring"
-
-# Custom TTL
-breadcrumb add ./config.yaml "Testing" --ttl 2h
-
-# Date-based (expires on specific date)
-breadcrumb add ./api/v2/ "Unstable" --expires 2026-06-01
-
-# Permanent (until manually removed)
-breadcrumb add ./vendor/ "Vendored deps" --severity info
-```
-
-## Path Patterns
-
-```bash
-# Exact file
-breadcrumb add ./src/auth/legacy.ts "Warning"
-
-# Directory (recursive, note trailing slash)
-breadcrumb add ./vendor/ "Vendored deps, don't edit"
-
-# Glob pattern
-breadcrumb add "*.generated.ts" "Auto-generated, edit templates instead"
-```
-
-## Coordination Patterns
-
-### Claim/Release
-
-```bash
-# Agent A claims a directory
-breadcrumb claim ./src/auth/ "Refactoring login flow"
-
-# Agent B checks status, sees the claim
-breadcrumb status
-
-# Agent B waits for it to clear
-breadcrumb wait ./src/auth/ --timeout 10m
-
-# Agent A finishes and releases
-breadcrumb release ./src/auth/
-
-# Agent B's wait returns, proceeds
-```
-
-### Parallel work
-
-```bash
-# Agent A works on frontend
-breadcrumb claim ./src/frontend/ "Updating UI"
-
-# Agent B works on backend (no conflict)
-breadcrumb claim ./src/backend/ "API optimization"
-
-# Both work in parallel
-breadcrumb status
-# Shows both claims, different areas
-```
+| `add <path> <message>` | Add a note to a file |
+| `check <path>` | See notes on a file |
+| `ls` | List all notes |
+| `rm <path>` | Remove a note |
 
 ## Claude Code Plugin
 
-For Claude Code users, an optional plugin adds automatic session cleanup:
+For Claude Code users, the plugin auto-shows notes when reading files:
 
 ```bash
 # Install from marketplace
 /plugin marketplace add tylergibbs1/breadcrumb
 /plugin install breadcrumb@breadcrumb-marketplace
-
-# Or load locally
-claude --plugin-dir ./breadcrumb-plugin
 ```
 
-| Feature | Standalone | With Plugin |
-|---------|------------|-------------|
-| Check breadcrumbs | Manual | Manual (or hook-based) |
-| Session cleanup | Manual | Automatic (SessionEnd hook) |
+When an agent reads a file with notes, they see:
+```
+📝 Regex handles unicode edge cases, don't simplify
+```
 
-## Environment Variables
+## Vendor Agnostic
 
-| Variable | Description |
-|----------|-------------|
-| `BREADCRUMB_FILE` | Override `.breadcrumbs.json` location |
-| `BREADCRUMB_AUTHOR` | Default agent_id for breadcrumbs |
-| `BREADCRUMB_SESSION_ID` | Session ID for auto-cleanup (optional, also reads `CLAUDE_SESSION_ID`) |
+Breadcrumb works with **any AI agent system** that can run shell commands.
+
+| Component | Vendor-specific? |
+|-----------|------------------|
+| CLI (`breadcrumb`) | No - works everywhere |
+| `.breadcrumbs.json` | No - plain JSON |
+| Claude Code plugin | Yes - optional integration |
+
+For other tools (Cursor, Windsurf, Aider), add to your system prompt or equivalent:
+- Check for notes before editing: `breadcrumb check <file>`
+- Leave notes after non-obvious changes: `breadcrumb add <file> "message"`
 
 ## Storage
 
-Breadcrumbs are stored in `.breadcrumbs.json` at repo root:
+Notes are stored in `.breadcrumbs.json` at repo root:
 
 ```json
 {
@@ -257,28 +106,13 @@ Breadcrumbs are stored in `.breadcrumbs.json` at repo root:
   "breadcrumbs": [
     {
       "id": "b_1a2b3c",
-      "path": "src/auth/legacy.ts",
-      "pattern_type": "exact",
-      "severity": "warn",
-      "message": "Migration in progress",
-      "added_by": {
-        "agent_id": "agent",
-        "session_id": "sess_abc123",
-        "task": "Auth migration"
-      },
-      "added_at": "2026-01-10T14:30:00Z",
-      "session_id": "sess_abc123"
+      "path": "src/parser.ts",
+      "message": "Regex handles unicode edge cases, don't simplify",
+      "severity": "info",
+      "added_at": "2026-01-10T14:30:00Z"
     }
   ]
 }
-```
-
-## Development
-
-```bash
-bun install
-bun run src/index.ts <command>
-bun run build
 ```
 
 ## License
