@@ -10,6 +10,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "breadcrumb check \"$TOOL_INPUT_file_path\" 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }
