@@ -1,7 +1,7 @@
 {
   "name": "breadcrumb",
-  "description": "Check for file warnings and institutional knowledge before reading or modifying files",
-  "version": "1.0.7",
+  "description": "Check for file warnings and coordinate work-in-progress before reading or modifying files",
+  "version": "2.0.0",
   "author": {
     "name": "Tyler Gibbs"
   },

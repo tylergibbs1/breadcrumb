@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { isExpired } from "./expiration.js";
 import { ConfigSchema } from "./schema.js";
-import type { Breadcrumb, BreadcrumbConfig } from "./types.js";
+import type { AddedBy, Breadcrumb, BreadcrumbConfig } from "./types.js";
 
 export { isExpired };
 
@@ -15,22 +15,15 @@ export function findConfigPath(startDir?: string): string | null {
   }
 
   let currentDir = startDir ? resolve(startDir) : process.cwd();
-  const root = dirname(currentDir);
 
-  while (currentDir !== root) {
+  while (true) {
     const configPath = join(currentDir, CONFIG_FILENAME);
     if (existsSync(configPath)) {
       return configPath;
     }
     const parent = dirname(currentDir);
-    if (parent === currentDir) break;
+    if (parent === currentDir) break; // Reached filesystem root
     currentDir = parent;
-  }
-
-  // Check root as well
-  const rootConfig = join(currentDir, CONFIG_FILENAME);
-  if (existsSync(rootConfig)) {
-    return rootConfig;
   }
 
   return null;
@@ -55,7 +48,7 @@ export function saveConfig(configPath: string, config: BreadcrumbConfig): void {
 
 export function createEmptyConfig(): BreadcrumbConfig {
   return {
-    version: 1,
+    version: 2,
     breadcrumbs: [],
   };
 }
@@ -81,5 +74,24 @@ export function findBreadcrumbById(
   id: string
 ): Breadcrumb | undefined {
   return config.breadcrumbs.find((b) => b.id === id);
+}
+
+export interface BuildAddedByOptions {
+  sessionId?: string;
+  task?: string;
+}
+
+export function buildAddedBy(options: BuildAddedByOptions = {}): AddedBy {
+  const agentId = process.env.BREADCRUMB_AUTHOR || "agent";
+  const addedBy: AddedBy = { agent_id: agentId };
+
+  if (options.sessionId) {
+    addedBy.session_id = options.sessionId;
+  }
+  if (options.task) {
+    addedBy.task = options.task;
+  }
+
+  return addedBy;
 }
 

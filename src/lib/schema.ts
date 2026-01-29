@@ -1,10 +1,14 @@
 import { z } from "zod";
 
-export const SeveritySchema = z.enum(["info", "warn", "stop"]);
+export const SeveritySchema = z.enum(["info", "warn"]);
 
 export const PatternTypeSchema = z.enum(["exact", "directory", "glob"]);
 
-export const SourceSchema = z.enum(["human", "agent"]);
+export const AddedBySchema = z.object({
+  agent_id: z.string().min(1, "agent_id is required"),
+  session_id: z.string().optional(),
+  task: z.string().optional(),
+});
 
 export const BreadcrumbSchema = z.object({
   id: z.string().regex(/^b_[a-zA-Z0-9]{6}$/, "ID must match b_XXXXXX format"),
@@ -12,23 +16,20 @@ export const BreadcrumbSchema = z.object({
   pattern_type: PatternTypeSchema,
   message: z.string().min(1, "Message is required"),
   severity: SeveritySchema,
-  source: SourceSchema,
-  session_id: z.string().optional(),
-  added_by: z.string().optional(),
-  added_at: z.string().datetime({ offset: true }).optional(),
+  added_by: AddedBySchema,
+  added_at: z.string().datetime({ offset: true }),
   expires: z
     .string()
     .datetime({ offset: true })
     .optional()
     .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
     .optional(),
-  ttl: z.string().regex(/^\d+[mhd]$/, "TTL must be like 30m, 2h, or 7d").optional(),
-  human_only: z.boolean().optional(),
-  agent_only: z.boolean().optional(),
+  ttl: z.string().regex(/^\d+[smhd]$/, "TTL must be like 30s, 5m, 2h, or 7d").optional(),
+  session_id: z.string().optional(),
 });
 
 export const ConfigSchema = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
   breadcrumbs: z.array(BreadcrumbSchema),
 });
 

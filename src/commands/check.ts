@@ -3,14 +3,14 @@ import { join, resolve } from "node:path";
 import type { Command } from "commander";
 import { findConfigPath, loadConfig } from "../lib/config.js";
 import { findMatchingBreadcrumbs } from "../lib/matcher.js";
-import { getDefaultFormat, outputCheckResult, outputError } from "../lib/output.js";
+import { outputError, outputJson } from "../lib/output.js";
 import { generateSuggestion } from "../lib/suggestion.js";
-import type { Breadcrumb, CheckResult, OutputFormat, Severity } from "../lib/types.js";
+import type { Breadcrumb, CheckResult, Severity } from "../lib/types.js";
 
 function getHighestSeverity(breadcrumbs: Breadcrumb[]): "clear" | Severity {
   if (breadcrumbs.length === 0) return "clear";
 
-  const severityOrder: Record<Severity, number> = { stop: 3, warn: 2, info: 1 };
+  const severityOrder: Record<Severity, number> = { warn: 2, info: 1 };
   let highest: Severity = "info";
 
   for (const b of breadcrumbs) {
@@ -29,8 +29,8 @@ function getExitCode(status: "clear" | Severity): number {
       return 0;
     case "warn":
       return 1;
-    case "stop":
-      return 2;
+    default:
+      return 0;
   }
 }
 
@@ -59,9 +59,6 @@ export function registerCheckCommand(program: Command): void {
     .description("Check a path for breadcrumb warnings")
     .argument("<path>", "File or directory path to check")
     .option("-r, --recursive", "Recursively check all files in directory")
-    .option("-H, --include-human-only", "Include human-only breadcrumbs")
-    .option("--include-agent-only", "Include agent-only breadcrumbs (included by default in JSON)")
-    .option("-p, --pretty", "Output in human-readable format (excludes agent-only)")
     .action((path, options) => {
       const configPath = findConfigPath();
 
@@ -72,17 +69,6 @@ export function registerCheckCommand(program: Command): void {
         );
         process.exit(1);
       }
-
-      const format: OutputFormat = options.pretty ? "pretty" : getDefaultFormat();
-
-      // Filtering logic:
-      // - JSON (agent-facing): exclude human_only by default, include agent_only
-      // - Pretty (human-facing): include human_only, exclude agent_only by default
-      const isAgentFacing = format === "json";
-      const filterOptions = {
-        includeHumanOnly: options.includeHumanOnly || !isAgentFacing,
-        includeAgentOnly: options.includeAgentOnly ?? isAgentFacing,
-      };
 
       try {
         const config = loadConfig(configPath);
@@ -112,11 +98,7 @@ export function registerCheckCommand(program: Command): void {
           if (checkedPaths.has(checkPath)) continue;
           checkedPaths.add(checkPath);
 
-          const matches = findMatchingBreadcrumbs(
-            config.breadcrumbs,
-            checkPath,
-            filterOptions
-          );
+          const matches = findMatchingBreadcrumbs(config.breadcrumbs, checkPath);
 
           for (const match of matches) {
             // Deduplicate by ID
@@ -136,7 +118,7 @@ export function registerCheckCommand(program: Command): void {
           suggestion,
         };
 
-        outputCheckResult(result, format);
+        outputJson(result);
         process.exit(getExitCode(status));
       } catch (error) {
         outputError(

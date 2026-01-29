@@ -63,8 +63,6 @@ export function matchesPath(
 }
 
 export interface FilterOptions {
-  includeHumanOnly?: boolean;
-  includeAgentOnly?: boolean;
   includeExpired?: boolean;
 }
 
@@ -74,12 +72,6 @@ export function findMatchingBreadcrumbs(
   options: FilterOptions = {}
 ): Breadcrumb[] {
   return breadcrumbs.filter((breadcrumb) => {
-    if (breadcrumb.human_only && !options.includeHumanOnly) {
-      return false;
-    }
-    if (breadcrumb.agent_only && !options.includeAgentOnly) {
-      return false;
-    }
     if (!options.includeExpired && isExpired(breadcrumb)) {
       return false;
     }

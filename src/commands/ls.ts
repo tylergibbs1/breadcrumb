@@ -1,17 +1,16 @@
 import type { Command } from "commander";
 import { findConfigPath, isExpired, loadConfig } from "../lib/config.js";
-import { getDefaultFormat, outputBreadcrumbList, outputError } from "../lib/output.js";
-import type { OutputFormat, Severity, Source } from "../lib/types.js";
+import { outputError, outputJson } from "../lib/output.js";
+import type { Severity } from "../lib/types.js";
 
 export function registerLsCommand(program: Command): void {
   program
     .command("ls")
     .description("List all breadcrumbs")
     .option("-e, --expired", "Include expired breadcrumbs")
-    .option("-s, --severity <level>", "Filter by severity: info, warn, stop")
-    .option("--source <source>", "Filter by source: human, agent")
-    .option("-p, --pretty", "Output in human-readable format")
-    .option("-j, --json", "Output in JSON format")
+    .option("-s, --severity <level>", "Filter by severity: info, warn")
+    .option("-a, --active", "Show only active claims (session-scoped)")
+    .option("--session <id>", "Filter by session ID")
     .action((options) => {
       const configPath = findConfigPath();
 
@@ -25,7 +24,7 @@ export function registerLsCommand(program: Command): void {
 
       // Validate severity filter
       if (options.severity) {
-        const validSeverities: Severity[] = ["info", "warn", "stop"];
+        const validSeverities: Severity[] = ["info", "warn"];
         if (!validSeverities.includes(options.severity)) {
           outputError(
             "INVALID_SEVERITY",
@@ -33,28 +32,6 @@ export function registerLsCommand(program: Command): void {
           );
           process.exit(1);
         }
-      }
-
-      // Validate source filter
-      if (options.source) {
-        const validSources: Source[] = ["human", "agent"];
-        if (!validSources.includes(options.source)) {
-          outputError(
-            "INVALID_SOURCE",
-            `Invalid source '${options.source}'. Must be one of: ${validSources.join(", ")}`
-          );
-          process.exit(1);
-        }
-      }
-
-      // Determine format (--json takes precedence over --pretty)
-      let format: OutputFormat;
-      if (options.json) {
-        format = "json";
-      } else if (options.pretty) {
-        format = "pretty";
-      } else {
-        format = getDefaultFormat();
       }
 
       try {
@@ -72,20 +49,42 @@ export function registerLsCommand(program: Command): void {
           breadcrumbs = breadcrumbs.filter((b) => b.severity === options.severity);
         }
 
-        // Filter by source
-        if (options.source) {
-          breadcrumbs = breadcrumbs.filter((b) => b.source === options.source);
+        // Filter by active claims (session-scoped)
+        if (options.active) {
+          breadcrumbs = breadcrumbs.filter((b) => b.session_id);
         }
 
-        // Sort by severity (stop > warn > info), then by path
-        const severityOrder: Record<Severity, number> = { stop: 3, warn: 2, info: 1 };
+        // Filter by session ID
+        if (options.session) {
+          breadcrumbs = breadcrumbs.filter((b) => b.session_id === options.session);
+        }
+
+        // Sort by severity (warn > info), then by path
+        const severityOrder: Record<Severity, number> = { warn: 2, info: 1 };
         breadcrumbs.sort((a, b) => {
           const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
           if (severityDiff !== 0) return severityDiff;
           return a.path.localeCompare(b.path);
         });
 
-        outputBreadcrumbList(breadcrumbs, format);
+        // Count unique active sessions
+        const activeSessions = new Set(
+          breadcrumbs.filter((b) => b.session_id).map((b) => b.session_id)
+        );
+
+        // Count claims vs warnings
+        const claims = breadcrumbs.filter((b) => b.session_id).length;
+        const warnings = breadcrumbs.filter((b) => !b.session_id && b.severity === "warn").length;
+
+        outputJson({
+          breadcrumbs,
+          summary: {
+            total: breadcrumbs.length,
+            claims,
+            warnings,
+            active_sessions: activeSessions.size,
+          },
+        });
       } catch (error) {
         outputError(
           "LS_FAILED",

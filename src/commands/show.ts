@@ -5,8 +5,7 @@ import {
   findConfigPath,
   loadConfig,
 } from "../lib/config.js";
-import { getDefaultFormat, outputBreadcrumbDetail, outputError } from "../lib/output.js";
-import type { OutputFormat } from "../lib/types.js";
+import { outputError, outputJson } from "../lib/output.js";
 
 export function registerShowCommand(program: Command): void {
   program
@@ -14,7 +13,6 @@ export function registerShowCommand(program: Command): void {
     .description("Show details of a specific breadcrumb")
     .argument("[path]", "Path of the breadcrumb to show")
     .option("-i, --id <id>", "Show by breadcrumb ID instead of path")
-    .option("-p, --pretty", "Output in human-readable format")
     .action((path, options) => {
       if (!path && !options.id) {
         outputError("MISSING_ARGUMENT", "Must provide either a path or --id");
@@ -30,8 +28,6 @@ export function registerShowCommand(program: Command): void {
         );
         process.exit(1);
       }
-
-      const format: OutputFormat = options.pretty ? "pretty" : getDefaultFormat();
 
       try {
         const config = loadConfig(configPath);
@@ -51,7 +47,7 @@ export function registerShowCommand(program: Command): void {
           }
         }
 
-        outputBreadcrumbDetail(breadcrumb, format);
+        outputJson(breadcrumb);
       } catch (error) {
         outputError(
           "SHOW_FAILED",

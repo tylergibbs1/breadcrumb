@@ -1,8 +1,12 @@
-export type Severity = "info" | "warn" | "stop";
+export type Severity = "info" | "warn";
 
 export type PatternType = "exact" | "directory" | "glob";
 
-export type Source = "human" | "agent";
+export interface AddedBy {
+  agent_id: string;
+  session_id?: string;
+  task?: string;
+}
 
 export interface Breadcrumb {
   id: string;
@@ -10,14 +14,11 @@ export interface Breadcrumb {
   pattern_type: PatternType;
   message: string;
   severity: Severity;
-  source: Source;
-  session_id?: string;
-  added_by?: string;
-  added_at?: string;
+  added_by: AddedBy;
+  added_at: string;
   expires?: string;
   ttl?: string;
-  human_only?: boolean;
-  agent_only?: boolean;
+  session_id?: string;
 }
 
 export interface BreadcrumbConfig {
@@ -26,7 +27,7 @@ export interface BreadcrumbConfig {
 }
 
 export interface CheckResult {
-  status: "clear" | "info" | "warn" | "stop";
+  status: "clear" | "info" | "warn";
   path: string;
   breadcrumbs: Breadcrumb[];
   suggestion: string | null;
@@ -38,10 +39,7 @@ export interface ErrorResult {
   message: string;
 }
 
-export type OutputFormat = "json" | "pretty";
-
 export const SEVERITY_PRIORITY: Record<Severity, number> = {
   info: 1,
   warn: 2,
-  stop: 3,
 };

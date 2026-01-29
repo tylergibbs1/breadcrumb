@@ -1,18 +1,20 @@
 import type { Breadcrumb } from "./types.js";
 
 /**
- * Parse TTL string (e.g., "30m", "2h", "7d") to milliseconds
+ * Parse duration string (e.g., "30s", "5m", "2h", "7d") to milliseconds
  */
-export function parseTtl(ttl: string): number {
-  const match = ttl.match(/^(\d+)([mhd])$/);
+export function parseDuration(duration: string): number {
+  const match = duration.match(/^(\d+)([smhd])$/);
   if (!match) {
-    throw new Error(`Invalid TTL format: ${ttl}. Use format like 30m, 2h, or 7d`);
+    throw new Error(`Invalid duration format: ${duration}. Use format like 30s, 5m, 2h, or 7d`);
   }
 
   const value = parseInt(match[1], 10);
   const unit = match[2];
 
   switch (unit) {
+    case "s":
+      return value * 1000;
     case "m":
       return value * 60 * 1000;
     case "h":
@@ -20,8 +22,15 @@ export function parseTtl(ttl: string): number {
     case "d":
       return value * 24 * 60 * 60 * 1000;
     default:
-      throw new Error(`Invalid TTL unit: ${unit}`);
+      throw new Error(`Invalid duration unit: ${unit}`);
   }
+}
+
+/**
+ * Parse TTL string - alias for parseDuration
+ */
+export function parseTtl(ttl: string): number {
+  return parseDuration(ttl);
 }
 
 /**
@@ -39,12 +48,10 @@ export function isDateExpired(breadcrumb: Breadcrumb): boolean {
  * Check if a breadcrumb has expired based on TTL
  */
 export function isTtlExpired(breadcrumb: Breadcrumb): boolean {
-  if (!breadcrumb.ttl || !breadcrumb.added_at) return false;
+  if (!breadcrumb.ttl) return false;
 
   try {
     const addedAt = new Date(breadcrumb.added_at).getTime();
-    // Invalid added_at = treat as expired (fail-safe)
-    if (isNaN(addedAt)) return true;
     const ttlMs = parseTtl(breadcrumb.ttl);
     const expiryTime = addedAt + ttlMs;
     return Date.now() > expiryTime;
@@ -70,7 +77,7 @@ export function getExpirationInfo(breadcrumb: Breadcrumb): string | null {
     return `session: ${breadcrumb.session_id}`;
   }
 
-  if (breadcrumb.ttl && breadcrumb.added_at) {
+  if (breadcrumb.ttl) {
     try {
       const addedAt = new Date(breadcrumb.added_at).getTime();
       const ttlMs = parseTtl(breadcrumb.ttl);

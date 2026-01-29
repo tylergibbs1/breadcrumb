@@ -1,7 +1,7 @@
 {
   "name": "breadcrumb-cli",
-  "version": "1.0.7",
-  "description": "Agent-first CLI tool for attaching contextual warnings to file paths",
+  "version": "2.0.0",
+  "description": "Agent-to-agent coordination via file-attached warnings",
   "author": "Tyler Gibbs",
   "license": "MIT",
   "type": "module",

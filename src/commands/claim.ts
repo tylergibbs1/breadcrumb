@@ -10,19 +10,16 @@ import {
 import { parseTtl } from "../lib/expiration.js";
 import { detectPatternType } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
-import type { Breadcrumb, Severity } from "../lib/types.js";
+import type { Breadcrumb } from "../lib/types.js";
 
-export function registerAddCommand(program: Command): void {
+export function registerClaimCommand(program: Command): void {
   program
-    .command("add")
-    .description("Add a breadcrumb warning to a path")
-    .argument("<path>", "File path, directory, or glob pattern")
-    .argument("<message>", "Warning message")
-    .option("-s, --severity <level>", "Severity level: info, warn", "warn")
-    .option("-e, --expires <date>", "Expiration date (ISO 8601 or YYYY-MM-DD)")
-    .option("--ttl <duration>", "Time-to-live (e.g., 30s, 5m, 2h, 7d)")
-    .option("--session <id>", "Session ID (breadcrumb expires when session ends)")
+    .command("claim")
+    .description("Claim a path as work-in-progress (session-scoped by default)")
+    .argument("<path>", "File path, directory, or glob pattern to claim")
+    .argument("[message]", "Optional message (default: 'Work in progress')")
     .option("-t, --task <task>", "Task description for context")
+    .option("--ttl <duration>", "Time-to-live to outlast session (e.g., 30s, 5m, 2h, 7d)")
     .action((path, message, options) => {
       const configPath = findConfigPath();
 
@@ -34,33 +31,13 @@ export function registerAddCommand(program: Command): void {
         process.exit(1);
       }
 
-      // Validate severity
-      const validSeverities: Severity[] = ["info", "warn"];
-      if (!validSeverities.includes(options.severity)) {
+      const sessionId = process.env.CLAUDE_SESSION_ID;
+      if (!sessionId && !options.ttl) {
         outputError(
-          "INVALID_SEVERITY",
-          `Invalid severity '${options.severity}'. Must be one of: ${validSeverities.join(", ")}`
+          "NO_SESSION",
+          "CLAUDE_SESSION_ID environment variable is required for claim (or use --ttl to create a time-limited claim)"
         );
         process.exit(1);
-      }
-
-      // Validate expiration date if provided
-      if (options.expires) {
-        const date = new Date(options.expires);
-        if (Number.isNaN(date.getTime())) {
-          outputError(
-            "INVALID_DATE",
-            `Invalid expiration date '${options.expires}'. Use ISO 8601 or YYYY-MM-DD format.`
-          );
-          process.exit(1);
-        }
-        if (date <= new Date()) {
-          outputError(
-            "INVALID_DATE",
-            "Expiration date must be in the future."
-          );
-          process.exit(1);
-        }
       }
 
       // Validate TTL if provided
@@ -79,40 +56,37 @@ export function registerAddCommand(program: Command): void {
       try {
         const config = loadConfig(configPath);
 
-        // Check if path already has a breadcrumb (normalize to catch ./foo and foo)
+        // Check if path already has a breadcrumb
         const normalizedPath = resolve(path);
         const existing = config.breadcrumbs.find(
           (b) => resolve(b.path) === normalizedPath
         );
         if (existing) {
           outputError(
-            "ALREADY_EXISTS",
-            `Breadcrumb already exists for path '${path}' (id: ${existing.id}). Use 'breadcrumb rm' first.`
+            "ALREADY_CLAIMED",
+            `Path '${path}' is already claimed (id: ${existing.id}). Use 'breadcrumb release' first.`
           );
           process.exit(1);
         }
 
         const patternType = detectPatternType(path);
-        const sessionId = options.session || process.env.CLAUDE_SESSION_ID;
 
         const breadcrumb: Breadcrumb = {
           id: generateId(),
           path,
           pattern_type: patternType,
-          message,
-          severity: options.severity as Severity,
+          message: message || "Work in progress",
+          severity: "warn",
           added_by: buildAddedBy({ sessionId, task: options.task }),
           added_at: new Date().toISOString(),
         };
 
+        // Session-scoped by default
         if (sessionId) {
           breadcrumb.session_id = sessionId;
         }
 
-        if (options.expires) {
-          breadcrumb.expires = new Date(options.expires).toISOString();
-        }
-
+        // TTL overrides session scoping for outlasting the session
         if (options.ttl) {
           breadcrumb.ttl = options.ttl;
         }
@@ -126,8 +100,8 @@ export function registerAddCommand(program: Command): void {
         });
       } catch (error) {
         outputError(
-          "ADD_FAILED",
-          error instanceof Error ? error.message : "Failed to add breadcrumb"
+          "CLAIM_FAILED",
+          error instanceof Error ? error.message : "Failed to claim path"
         );
         process.exit(1);
       }

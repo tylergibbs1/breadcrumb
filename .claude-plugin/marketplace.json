@@ -5,15 +5,15 @@
     "email": "tyler@breadcrumb.dev"
   },
   "metadata": {
-    "description": "Plugins for agent-to-agent communication via file-attached warnings",
-    "version": "1.0.7"
+    "description": "Plugins for agent-to-agent coordination via file-attached warnings",
+    "version": "2.0.0"
   },
   "plugins": [
     {
       "name": "breadcrumb",
       "source": "./breadcrumb-plugin",
       "description": "Automatic breadcrumb enforcement for Claude Code. Checks file warnings before operations and cleans up session-scoped breadcrumbs.",
-      "version": "1.0.7",
+      "version": "2.0.0",
       "author": {
         "name": "Tyler Gibbs"
       },

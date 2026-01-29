@@ -24,14 +24,7 @@ fi
 result=$(breadcrumb check "$file_path" 2>/dev/null) || true
 code=$?
 
-if [ $code -eq 2 ]; then
-  # Stop level: block the operation, provide feedback to Claude
-  message=$(echo "$result" | jq -r '.suggestion // .breadcrumbs[0].message // "File is blocked by breadcrumb"')
-  echo "BLOCKED: $message"
-  echo ""
-  echo "This file has a stop-level breadcrumb. Ask the user for permission before proceeding."
-  exit 2
-elif [ $code -eq 1 ]; then
+if [ $code -eq 1 ]; then
   # Warn level: show warning, allow operation
   message=$(echo "$result" | jq -r '.suggestion // .breadcrumbs[0].message // "Warning exists"')
   echo "WARNING: $message"
