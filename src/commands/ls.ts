@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import { findConfigPath, isExpired, loadConfig } from "../lib/config.js";
 import { getDefaultFormat, outputBreadcrumbList, outputError } from "../lib/output.js";
-import type { OutputFormat, Severity } from "../lib/types.js";
+import type { OutputFormat, Severity, Source } from "../lib/types.js";
 
 export function registerLsCommand(program: Command): void {
   program
@@ -9,7 +9,9 @@ export function registerLsCommand(program: Command): void {
     .description("List all breadcrumbs")
     .option("-e, --expired", "Include expired breadcrumbs")
     .option("-s, --severity <level>", "Filter by severity: info, warn, stop")
+    .option("--source <source>", "Filter by source: human, agent")
     .option("-p, --pretty", "Output in human-readable format")
+    .option("-j, --json", "Output in JSON format")
     .action((options) => {
       const configPath = findConfigPath();
 
@@ -33,7 +35,27 @@ export function registerLsCommand(program: Command): void {
         }
       }
 
-      const format: OutputFormat = options.pretty ? "pretty" : getDefaultFormat();
+      // Validate source filter
+      if (options.source) {
+        const validSources: Source[] = ["human", "agent"];
+        if (!validSources.includes(options.source)) {
+          outputError(
+            "INVALID_SOURCE",
+            `Invalid source '${options.source}'. Must be one of: ${validSources.join(", ")}`
+          );
+          process.exit(1);
+        }
+      }
+
+      // Determine format (--json takes precedence over --pretty)
+      let format: OutputFormat;
+      if (options.json) {
+        format = "json";
+      } else if (options.pretty) {
+        format = "pretty";
+      } else {
+        format = getDefaultFormat();
+      }
 
       try {
         const config = loadConfig(configPath);
@@ -49,6 +71,19 @@ export function registerLsCommand(program: Command): void {
         if (options.severity) {
           breadcrumbs = breadcrumbs.filter((b) => b.severity === options.severity);
         }
+
+        // Filter by source
+        if (options.source) {
+          breadcrumbs = breadcrumbs.filter((b) => b.source === options.source);
+        }
+
+        // Sort by severity (stop > warn > info), then by path
+        const severityOrder: Record<Severity, number> = { stop: 3, warn: 2, info: 1 };
+        breadcrumbs.sort((a, b) => {
+          const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
+          if (severityDiff !== 0) return severityDiff;
+          return a.path.localeCompare(b.path);
+        });
 
         outputBreadcrumbList(breadcrumbs, format);
       } catch (error) {

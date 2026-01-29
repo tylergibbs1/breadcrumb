@@ -31,6 +31,7 @@ export function registerGuardCommand(program: Command): void {
     .option("-f, --force", "Run command even on stop-level breadcrumb")
     .option("-q, --quiet", "Suppress warning output to stderr")
     .option("-H, --include-human-only", "Include human-only breadcrumbs")
+    .option("--include-agent-only", "Include agent-only breadcrumbs")
     .action((path, commandParts, options) => {
       const configPath = findConfigPath();
 
@@ -48,37 +49,49 @@ export function registerGuardCommand(program: Command): void {
 
         const matches = findMatchingBreadcrumbs(config.breadcrumbs, targetPath, {
           includeHumanOnly: options.includeHumanOnly,
+          includeAgentOnly: options.includeAgentOnly,
         });
 
         const status = getHighestSeverity(matches);
         const suggestion = generateSuggestion(matches);
 
-        // Handle stop-level breadcrumb
-        if (status === "stop" && !options.force) {
-          if (!options.quiet && suggestion) {
-            console.error(suggestion);
-          }
-          process.exit(2);
+        // Always print suggestion if exists and not quiet
+        if (suggestion && !options.quiet) {
+          console.error(suggestion);
         }
 
-        // Print warnings to stderr
-        if (!options.quiet && suggestion && (status === "warn" || status === "info")) {
-          console.error(suggestion);
+        // Block execution if STOP and not forced
+        if (status === "stop" && !options.force) {
+          process.exit(2);
         }
 
         // Run the command
         const [cmd, ...args] = commandParts;
         const child = spawn(cmd, args, {
           stdio: "inherit",
-          shell: true,
+          shell: true, // Needed for shell operators like &&, |, etc.
         });
+
+        // Forward signals to child to prevent zombie processes
+        const forwardSignal = (signal: NodeJS.Signals) => {
+          if (child.exitCode === null) {
+            child.kill(signal);
+          }
+        };
+        process.on("SIGINT", () => forwardSignal("SIGINT"));
+        process.on("SIGTERM", () => forwardSignal("SIGTERM"));
+        process.on("SIGHUP", () => forwardSignal("SIGHUP"));
 
         child.on("error", (error) => {
           outputError("COMMAND_FAILED", `Failed to run command: ${error.message}`);
           process.exit(1);
         });
 
-        child.on("exit", (code) => {
+        child.on("exit", (code, signal) => {
+          if (signal) {
+            // Standard convention: 128 + signal number
+            process.exit(128 + 1);
+          }
           process.exit(code ?? 0);
         });
       } catch (error) {

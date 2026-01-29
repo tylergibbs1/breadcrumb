@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import type { Command } from "commander";
 import {
   findConfigPath,
@@ -78,6 +79,13 @@ export function registerAddCommand(program: Command): void {
           );
           process.exit(1);
         }
+        if (date <= new Date()) {
+          outputError(
+            "INVALID_DATE",
+            "Expiration date must be in the future."
+          );
+          process.exit(1);
+        }
       }
 
       // Validate TTL if provided
@@ -105,8 +113,11 @@ export function registerAddCommand(program: Command): void {
       try {
         const config = loadConfig(configPath);
 
-        // Check if path already has a breadcrumb
-        const existing = config.breadcrumbs.find((b) => b.path === path);
+        // Check if path already has a breadcrumb (normalize to catch ./foo and foo)
+        const normalizedPath = resolve(path);
+        const existing = config.breadcrumbs.find(
+          (b) => resolve(b.path) === normalizedPath
+        );
         if (existing) {
           outputError(
             "ALREADY_EXISTS",
@@ -132,8 +143,8 @@ export function registerAddCommand(program: Command): void {
           breadcrumb.added_by = author;
         }
 
-        if (options.session) {
-          breadcrumb.session_id = options.session;
+        if (sessionId) {
+          breadcrumb.session_id = sessionId;
         }
 
         if (options.expires) {
