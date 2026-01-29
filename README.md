@@ -223,7 +223,7 @@ claude --plugin-dir ./breadcrumb-plugin
 |----------|-------------|
 | `BREADCRUMB_FILE` | Override `.breadcrumbs.json` location |
 | `BREADCRUMB_AUTHOR` | Default agent_id for breadcrumbs |
-| `CLAUDE_SESSION_ID` | Session ID for session-scoped breadcrumbs |
+| `BREADCRUMB_SESSION_ID` | Session ID for session-scoped breadcrumbs |
 
 ## Storage
 

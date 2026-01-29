@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "breadcrumb session-end \"$CLAUDE_SESSION_ID\""
+            "command": "BREADCRUMB_SESSION_ID=\"$CLAUDE_SESSION_ID\" breadcrumb session-end \"$CLAUDE_SESSION_ID\""
           }
         ]
       }

@@ -6,7 +6,7 @@ allowed-tools: Bash(breadcrumb *)
 
 # Breadcrumb
 
-Breadcrumb attaches warnings and institutional knowledge to file paths. Use it to communicate with other agents (or your future self in another session).
+Breadcrumb attaches warnings and context to file paths. Use it to communicate with other agents (or your future self in another session).
 
 ## Checking files
 
@@ -25,25 +25,46 @@ List all breadcrumbs in the project:
 breadcrumb ls
 ```
 
-## Adding breadcrumbs
-
-When you discover important context about a file, leave a breadcrumb:
-
+See active claims:
 ```bash
-# Mark a file you're actively working on (auto-cleans when session ends)
-breadcrumb add ./src/api/users.ts "Refactoring in progress" --session $CLAUDE_SESSION_ID
-
-# Leave a short-lived warning
-breadcrumb add ./config/cache.yaml "Testing cache settings" --ttl 1h
-
-# Leave context for other agents
-breadcrumb add ./src/utils/parser.ts "Handles unicode edge case, don't simplify" --agent-only
-
-# Leave a warning that persists
-breadcrumb add ./vendor/ "Vendored deps, don't edit directly" --severity info
+breadcrumb status
 ```
 
-Note: You can use `info` or `warn` severity. Only humans can use `stop`.
+## Claiming files (work-in-progress)
+
+Claim a file you're actively working on:
+```bash
+breadcrumb claim ./src/api/users.ts "Refactoring in progress"
+```
+
+Claim with task context:
+```bash
+breadcrumb claim ./src/auth/ "Migrating to OAuth2" --task "Auth migration"
+```
+
+Release when done:
+```bash
+breadcrumb release ./src/api/users.ts
+```
+
+Wait for a path to be clear:
+```bash
+breadcrumb wait ./src/auth/ --timeout 5m
+```
+
+## Adding breadcrumbs
+
+Leave context for other agents:
+```bash
+# Short-lived warning
+breadcrumb add ./config/cache.yaml "Testing cache settings" --ttl 1h
+
+# Permanent context
+breadcrumb add ./src/utils/parser.ts "Handles unicode edge case, don't simplify" --severity info
+
+# Directory warning
+breadcrumb add ./vendor/ "Vendored deps, don't edit directly" --severity info
+```
 
 ## Interpreting results
 
@@ -52,7 +73,8 @@ Note: You can use `info` or `warn` severity. Only humans can use `stop`.
 | `clear` | 0 | No warnings. Safe to proceed. |
 | `info` | 0 | Informational note. Read and proceed. |
 | `warn` | 1 | Warning exists. Proceed with caution. Follow the `suggestion`. |
-| `stop` | 2 | Blocked by human. Do not proceed without user approval. |
+
+All breadcrumbs are advisory, not blocking.
 
 ## When to add breadcrumbs
 
@@ -63,12 +85,7 @@ Note: You can use `info` or `warn` severity. Only humans can use `stop`.
 
 ## Expiration options
 
-- `--session $CLAUDE_SESSION_ID` - Expires when your session ends (default for agents)
-- `--ttl 2h` - Expires after duration (30m, 2h, 7d)
+- Session-scoped (default for claims) - Expires when session ends
+- `--ttl 2h` - Expires after duration (30s, 5m, 2h, 7d)
 - `--expires 2026-06-01` - Expires on specific date
 - No flag - Permanent until manually removed
-
-## Note
-
-File operations (Read, Edit, Write, View) automatically check breadcrumbs via a hook.
-This skill is for manual exploration and adding new breadcrumbs.

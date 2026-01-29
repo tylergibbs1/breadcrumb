@@ -4,7 +4,7 @@ description: Agent-to-agent coordination via file-attached warnings. Check bread
 license: MIT
 metadata:
   author: tylergibbs1
-  version: "2.0.1"
+  version: "2.0.2"
   keywords:
     - agent-communication
     - file-warnings
