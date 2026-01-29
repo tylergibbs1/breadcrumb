@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "breadcrumb check \"$TOOL_INPUT_FILE_PATH\" 2>/dev/null || true"
+            "command": "breadcrumb check \"$FILE\" 2>/dev/null || true"
           }
         ]
       }
