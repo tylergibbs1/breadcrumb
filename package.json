@@ -1,5 +1,5 @@
 {
-  "name": "breadcrumb",
+  "name": "breadcrumb-cli",
   "version": "1.0.1",
   "description": "Agent-first CLI tool for attaching contextual warnings to file paths",
   "author": "Tyler Gibbs",

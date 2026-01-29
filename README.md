@@ -1,6 +1,6 @@
 # Breadcrumb
 
-[![npm version](https://img.shields.io/npm/v/breadcrumb.svg)](https://www.npmjs.com/package/breadcrumb)
+[![npm version](https://img.shields.io/npm/v/breadcrumb-cli.svg)](https://www.npmjs.com/package/breadcrumb-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.0+-f9f1e1.svg)](https://bun.sh/)
@@ -92,10 +92,10 @@ Agents integrate by checking exit codes:
 
 ```bash
 # npm
-npm install -g breadcrumb
+npm install -g breadcrumb-cli
 
 # bun
-bun add -g breadcrumb
+bun add -g breadcrumb-cli
 
 # From source
 git clone https://github.com/tylergibbs1/breadcrumb
