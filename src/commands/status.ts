@@ -24,12 +24,14 @@ export function registerStatusCommand(program: Command): void {
         // Filter out expired breadcrumbs
         const activeBreadcrumbs = config.breadcrumbs.filter((b) => !isExpired(b));
 
-        // Active claims are session-scoped breadcrumbs (have session_id)
-        const activeClaims = activeBreadcrumbs.filter((b) => b.session_id);
+        // Active claims are session-scoped or TTL-based warn breadcrumbs
+        const activeClaims = activeBreadcrumbs.filter(
+          (b) => b.session_id || (b.severity === "warn" && b.ttl)
+        );
 
-        // Count warnings (non-session-scoped)
+        // Permanent warnings (no session, no TTL)
         const warnings = activeBreadcrumbs.filter(
-          (b) => !b.session_id && b.severity === "warn"
+          (b) => !b.session_id && !b.ttl && b.severity === "warn"
         ).length;
 
         // Count unique active sessions
