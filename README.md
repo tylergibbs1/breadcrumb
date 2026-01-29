@@ -7,11 +7,11 @@
 
 ![Breadcrumb Demo](public/demo.png)
 
-**Leave notes on files for other agents.**
+**Leave notes on files for AI agents.**
 
-When you fix a tricky bug or write code that looks wrong but is intentional, the next agent has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and "simplifies" it, breaking a unicode edge case that took hours to debug.
+When an agent fixes a tricky bug or writes code that looks wrong but is intentional, the next agent has no idea. It sees "dead code" and helpfully cleans it up. Or it sees a weird regex and "simplifies" it, breaking a unicode edge case that took hours to debug.
 
-Breadcrumb fixes this. Leave a note, and future agents see it when they read the file.
+Breadcrumb fixes this. Leave a note on a file, and agents see it when they read it.
 
 ```bash
 # Leave a note
