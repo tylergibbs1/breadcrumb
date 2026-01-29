@@ -28,7 +28,7 @@ breadcrumb check ./src/auth/legacy.ts
 
 ```bash
 breadcrumb claim ./src/auth/ "Refactoring auth module"
-# Auto-cleans when session ends
+# Default 2h TTL, or auto-cleans with session
 
 # Other agents wait for it to be clear
 breadcrumb wait ./src/auth/ --timeout 5m
@@ -115,7 +115,7 @@ breadcrumb release ./src/auth/legacy.ts
 | Command | Description |
 |---------|-------------|
 | `init` | Create `.breadcrumbs.json` in current repo |
-| `claim <path> [message]` | Claim a path as work-in-progress (session-scoped) |
+| `claim <path> [message]` | Claim a path as work-in-progress (default: 2h TTL) |
 | `release <path>` | Release a claimed path |
 | `check <path>` | Check if a path has breadcrumbs |
 | `wait <path>` | Wait for a path to be clear |
@@ -123,7 +123,6 @@ breadcrumb release ./src/auth/legacy.ts
 | `add <path> <message>` | Add a breadcrumb to a path |
 | `rm <path>` | Remove a breadcrumb |
 | `ls` | List all breadcrumbs |
-| `show <path>` | Show details for a breadcrumb |
 | `prune` | Remove expired breadcrumbs |
 | `session-end <id>` | Clean up session-scoped breadcrumbs |
 
@@ -139,10 +138,10 @@ breadcrumb release ./src/auth/legacy.ts
 Breadcrumbs expire automatically to prevent accumulation:
 
 ```bash
-# Session-scoped (default for claims, expires when session ends)
+# TTL-based (default for claims: 2h)
 breadcrumb claim ./src/api.ts "Refactoring"
 
-# TTL-based (expires after duration)
+# Custom TTL
 breadcrumb add ./config.yaml "Testing" --ttl 2h
 
 # Date-based (expires on specific date)
@@ -223,7 +222,7 @@ claude --plugin-dir ./breadcrumb-plugin
 |----------|-------------|
 | `BREADCRUMB_FILE` | Override `.breadcrumbs.json` location |
 | `BREADCRUMB_AUTHOR` | Default agent_id for breadcrumbs |
-| `BREADCRUMB_SESSION_ID` | Session ID for session-scoped breadcrumbs |
+| `BREADCRUMB_SESSION_ID` | Session ID for auto-cleanup (optional, also reads `CLAUDE_SESSION_ID`) |
 
 ## Storage
 
