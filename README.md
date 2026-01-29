@@ -79,6 +79,27 @@ $ echo $?
 
 All breadcrumbs are **advisory, not blocking**. Agents can always proceed if they determine it's appropriate. This prevents deadlocks while encouraging coordination.
 
+## Vendor Agnostic
+
+Breadcrumb works with **any AI agent system** that can run shell commands—not just Claude Code.
+
+| Component | Vendor-specific? |
+|-----------|------------------|
+| CLI (`breadcrumb`) | No - works everywhere |
+| `.breadcrumbs.json` | No - plain JSON |
+| Claude Code plugin | Yes - optional integration |
+
+**Using with other tools:**
+
+1. Install the CLI globally
+2. Add breadcrumb commands to your agent's system prompt or CLAUDE.md equivalent:
+   - Run `breadcrumb check <file>` before editing
+   - Run `breadcrumb claim <file> "message"` when starting work
+   - Run `breadcrumb release <file>` when done
+3. Set `BREADCRUMB_SESSION_ID` env var for session-scoped claims (optional)
+
+The Claude Code plugin is just one integration. Cursor, Windsurf, Aider, or custom agent systems can integrate the same way.
+
 ## Installation
 
 ```bash
