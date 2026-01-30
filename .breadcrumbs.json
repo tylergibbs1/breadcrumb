@@ -5,7 +5,7 @@
       "id": "b_bmJbJs",
       "path": "./src/utils/parser.ts",
       "pattern_type": "exact",
-      "message": "Don't simplify - handles unicode edge cases",
+      "message": "Don't simplify - handles unicode edge cases for CJK text processing",
       "severity": "info",
       "added_by": {
         "agent_id": "agent"
@@ -159,7 +159,7 @@
       "id": "b_4iiDTC",
       "path": "./src/lib/matcher.ts",
       "pattern_type": "exact",
-      "message": "Bun-only: Uses native Bun.Glob for pattern matching and file scanning. Cached cwd, pre-compiled regex. Zero npm glob dependencies.",
+      "message": "Bun-only: Uses native Bun.Glob for pattern matching. No cwd caching (handles chdir). Improved glob intersection detection reduces false positives.",
       "severity": "info",
       "added_by": {
         "agent_id": "agent"
@@ -176,6 +176,39 @@
         "agent_id": "agent"
       },
       "added_at": "2026-01-30T03:16:38.205Z"
+    },
+    {
+      "id": "b_9P0fxg",
+      "path": "./src/commands/edit.ts",
+      "pattern_type": "exact",
+      "message": "Edit breadcrumbs in-place. Preserves id/added_at. Supports --message, --append, --severity, --expires, --ttl, --clear-expiration. Validates all options before modifying.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T04:06:17.171Z"
+    },
+    {
+      "id": "b_LA7WMZ",
+      "path": "./src/commands/search.ts",
+      "pattern_type": "exact",
+      "message": "Full-text search with regex support. Case-insensitive by default for literals, case-sensitive for regex. Path filtering matches segments, not substrings. Single regex execution per match.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T04:06:18.114Z"
+    },
+    {
+      "id": "b_IINI7J",
+      "path": "./src/commands/coverage.ts",
+      "pattern_type": "exact",
+      "message": "Breadcrumb coverage analysis. Skips node_modules, .git, dist, build, .next. Shows covered/uncovered files with --show-covered/--show-uncovered flags.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T04:06:19.369Z"
     }
   ]
 }

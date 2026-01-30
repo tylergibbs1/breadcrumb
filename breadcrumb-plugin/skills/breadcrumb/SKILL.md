@@ -34,7 +34,10 @@ breadcrumb add ./src/tax.ts "Ceiling division intentional for compliance"
 
 | Command | Purpose |
 |---------|---------|
-| `breadcrumb add <path> "note"` | Add a note |
+| `breadcrumb add <path> "note"` | Add a note (warns about overlaps) |
+| `breadcrumb edit <path-or-id>` | Edit a note (`-m`, `-a`, `-s`) |
 | `breadcrumb check <path>` | See notes on a file |
+| `breadcrumb search <query>` | Find notes by content (`-r` for regex) |
+| `breadcrumb coverage [path]` | Show breadcrumb coverage stats |
 | `breadcrumb ls` | List all notes |
 | `breadcrumb rm <path>` | Remove a note |

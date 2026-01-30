@@ -13,20 +13,18 @@ if (typeof Bun === "undefined") {
   process.exit(1);
 }
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
 import { Command } from "commander";
+import pkg from "../package.json";
 import { registerAddCommand } from "./commands/add.js";
 import { registerCheckCommand } from "./commands/check.js";
+import { registerCoverageCommand } from "./commands/coverage.js";
+import { registerEditCommand } from "./commands/edit.js";
 import { registerInitCommand } from "./commands/init.js";
 import { registerLsCommand } from "./commands/ls.js";
 import { registerPruneCommand } from "./commands/prune.js";
 import { registerRmCommand } from "./commands/rm.js";
+import { registerSearchCommand } from "./commands/search.js";
 import { registerStatusCommand } from "./commands/status.js";
-
-// Read version from package.json
-const __dirname = dirname(Bun.fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
 
 const program = new Command();
 
@@ -38,8 +36,11 @@ program
 // Register all commands
 registerInitCommand(program);
 registerAddCommand(program);
+registerEditCommand(program);
 registerRmCommand(program);
 registerCheckCommand(program);
+registerSearchCommand(program);
+registerCoverageCommand(program);
 registerStatusCommand(program);
 registerLsCommand(program);
 registerPruneCommand(program);

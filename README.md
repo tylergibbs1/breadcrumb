@@ -99,10 +99,58 @@ Now when an agent tries to "simplify" this code:
 | Command | Description |
 |---------|-------------|
 | `init` | Create `.breadcrumbs.json` in current repo |
-| `add <path> <message>` | Add a note about a file |
-| `check <path>` | See notes on a file |
-| `ls` | List all notes |
+| `add <path> <message>` | Add a note (warns about overlaps) |
+| `edit <path-or-id>` | Edit a note in place |
 | `rm <path>` | Remove a note |
+| `check <path>` | See notes on a file |
+| `search <query>` | Find notes by content |
+| `coverage [path]` | Show breadcrumb coverage stats |
+| `ls` | List all notes |
+| `status` | Quick overview (counts) |
+| `prune` | Remove expired notes |
+
+### Add Options
+
+```bash
+breadcrumb add <path> <message> [options]
+  -s, --severity <level>   # info (default) or warn
+  -e, --expires <date>     # Expiration date (ISO 8601)
+  --ttl <duration>         # Time-to-live (30s, 5m, 2h, 7d)
+  --no-overlap-check       # Skip overlap detection
+```
+
+### Edit Options
+
+```bash
+breadcrumb edit <path-or-id> [options]
+  -m, --message <text>     # Replace message
+  -a, --append <text>      # Append to message
+  -s, --severity <level>   # Change severity
+  -e, --expires <date>     # Set expiration
+  --ttl <duration>         # Set TTL
+  --clear-expiration       # Remove expiration
+```
+
+### Search Options
+
+```bash
+breadcrumb search <query> [options]
+  -r, --regex              # Treat query as regex
+  -c, --case-sensitive     # Case-sensitive literal search
+  -i, --ignore-case        # Case-insensitive regex search
+  -p, --path <segment>     # Filter by path segment
+  -s, --severity <level>   # Filter by severity
+```
+
+### Coverage Options
+
+```bash
+breadcrumb coverage [path] [options]
+  -g, --glob <pattern>     # File pattern (default: **/*)
+  --show-covered           # List covered files
+  --show-uncovered         # List uncovered files
+  -l, --limit <n>          # Max files to list (default: 20)
+```
 
 ## Claude Code Plugin
 

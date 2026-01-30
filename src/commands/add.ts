@@ -8,9 +8,24 @@ import {
   saveConfig,
 } from "../lib/config.js";
 import { parseTtl } from "../lib/expiration.js";
-import { detectPatternType } from "../lib/matcher.js";
+import { detectPatternType, findOverlappingBreadcrumbs, type OverlapResult } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
 import type { Breadcrumb, Severity } from "../lib/types.js";
+
+function formatOverlapMessage(overlap: OverlapResult): string {
+  switch (overlap.overlap_type) {
+    case "exact":
+      return `Exact duplicate of existing breadcrumb '${overlap.path}' (${overlap.id})`;
+    case "subset":
+      return `Already covered by existing breadcrumb '${overlap.path}' (${overlap.id})`;
+    case "superset":
+      return `Overlaps with more specific breadcrumb '${overlap.path}' (${overlap.id})`;
+    case "intersect":
+      return `May intersect with breadcrumb '${overlap.path}' (${overlap.id})`;
+    default:
+      return `Overlaps with '${overlap.path}' (${overlap.id})`;
+  }
+}
 
 export function registerAddCommand(program: Command): void {
   program
@@ -21,8 +36,9 @@ export function registerAddCommand(program: Command): void {
     .option("-s, --severity <level>", "Severity level: info, warn", "warn")
     .option("-e, --expires <date>", "Expiration date (ISO 8601 or YYYY-MM-DD)")
     .option("--ttl <duration>", "Time-to-live (e.g., 30s, 5m, 2h, 7d)")
-    .action((path, message, options) => {
-      const configPath = findConfigPath();
+    .option("--no-overlap-check", "Skip overlap detection warning")
+    .action(async (path, message, options) => {
+      const configPath = await findConfigPath();
 
       if (!configPath) {
         outputError(
@@ -75,7 +91,7 @@ export function registerAddCommand(program: Command): void {
       }
 
       try {
-        const config = loadConfig(configPath);
+        const config = await loadConfig(configPath);
 
         // Check if path already has a breadcrumb (normalize to catch ./foo and foo)
         const normalizedPath = resolve(path);
@@ -91,6 +107,11 @@ export function registerAddCommand(program: Command): void {
         }
 
         const patternType = detectPatternType(path);
+
+        // Check for overlapping breadcrumbs (unless disabled)
+        const overlaps = options.overlapCheck !== false
+          ? findOverlappingBreadcrumbs(config.breadcrumbs, path, patternType)
+          : [];
 
         const breadcrumb: Breadcrumb = {
           id: generateId(),
@@ -111,12 +132,25 @@ export function registerAddCommand(program: Command): void {
         }
 
         config.breadcrumbs.push(breadcrumb);
-        saveConfig(configPath, config);
+        await saveConfig(configPath, config);
 
-        outputJson({
+        const result: Record<string, unknown> = {
           success: true,
           breadcrumb,
-        });
+        };
+
+        // Include overlap warnings in output
+        if (overlaps.length > 0) {
+          result.warnings = overlaps.map((o) => ({
+            type: "overlap",
+            overlap_type: o.overlap_type,
+            existing_id: o.id,
+            existing_path: o.path,
+            message: formatOverlapMessage(o),
+          }));
+        }
+
+        outputJson(result);
       } catch (error) {
         outputError(
           "ADD_FAILED",

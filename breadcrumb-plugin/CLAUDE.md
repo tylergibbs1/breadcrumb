@@ -19,6 +19,9 @@ breadcrumb add ./path/to/file "Explanation of why this code is intentional"
 | Command | Purpose |
 |---------|---------|
 | `breadcrumb check <path>` | Check for notes before editing |
-| `breadcrumb add <path> "msg"` | Leave a note for other agents |
+| `breadcrumb add <path> "msg"` | Leave a note (warns about overlaps) |
+| `breadcrumb edit <path-or-id>` | Edit a note in place (`-m`, `-a`, `-s`) |
+| `breadcrumb search <query>` | Find notes by content (`-r` for regex) |
+| `breadcrumb coverage [path]` | Show breadcrumb coverage stats |
 | `breadcrumb ls` | List all notes |
 | `breadcrumb rm <path>` | Remove a note |
