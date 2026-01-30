@@ -8,6 +8,7 @@ import {
   saveConfig,
 } from "../lib/config.js";
 import { parseTtl } from "../lib/expiration.js";
+import { computeFileHash } from "../lib/hash.js";
 import { detectPatternType, findOverlappingBreadcrumbs, type OverlapResult } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
 import type { Breadcrumb, Severity } from "../lib/types.js";
@@ -123,6 +124,15 @@ export function registerAddCommand(program: Command): void {
 
         if (options.ttl) {
           breadcrumb.ttl = options.ttl;
+        }
+
+        // Capture code hash for exact file paths (enables staleness detection)
+        if (patternType === "exact") {
+          const hash = await computeFileHash(path);
+          if (hash) {
+            breadcrumb.code_hash = hash;
+            breadcrumb.last_verified = new Date().toISOString();
+          }
         }
 
         config.breadcrumbs.push(breadcrumb);

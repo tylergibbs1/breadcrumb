@@ -2,6 +2,8 @@ export type Severity = "info" | "warn";
 
 export type PatternType = "exact" | "directory" | "glob";
 
+export type Staleness = "verified" | "stale" | "unknown";
+
 export interface AddedBy {
   agent_id: string;
 }
@@ -16,6 +18,9 @@ export interface Breadcrumb {
   added_at: string;
   expires?: string;
   ttl?: string;
+  // Staleness detection fields
+  code_hash?: string;
+  last_verified?: string;
 }
 
 export interface BreadcrumbConfig {
@@ -34,4 +39,18 @@ export interface ErrorResult {
   error: true;
   code: string;
   message: string;
+}
+
+export interface VerifyResult {
+  verified: number;
+  stale: number;
+  unknown: number;
+  breadcrumbs: Array<{
+    id: string;
+    path: string;
+    staleness: Staleness;
+    message: string;
+    current_hash?: string;
+    stored_hash?: string;
+  }>;
 }

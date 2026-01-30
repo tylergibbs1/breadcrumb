@@ -107,6 +107,7 @@ Now when an agent tries to "simplify" this code:
 | `check <path>` | See notes on a file |
 | `search <query>` | Find notes by content |
 | `coverage [path]` | Show breadcrumb coverage stats |
+| `verify [path]` | Check if notes are still valid |
 | `ls` | List all notes |
 | `status` | Quick overview (counts) |
 | `prune` | Remove expired notes |
@@ -153,6 +154,40 @@ breadcrumb coverage [path] [options]
   --show-uncovered         # List uncovered files
   -l, --limit <n>          # Max files to list (default: 20)
 ```
+
+### Verify Options
+
+```bash
+breadcrumb verify [path] [options]
+  --update                 # Update hashes after verification
+  --stale-only             # Only show stale breadcrumbs
+```
+
+## Staleness Detection
+
+Notes can become outdated when the code they protect changes. Breadcrumb tracks file content hashes to detect when notes may no longer be valid.
+
+```bash
+# Check if any notes are stale
+breadcrumb verify
+
+# Output shows staleness status:
+# - verified: File unchanged since note was added
+# - stale: File has changed, note may need review
+# - unknown: No hash stored (older notes or directory/glob patterns)
+
+# Update hashes after reviewing stale notes
+breadcrumb verify --update
+```
+
+When you add a note to a specific file, its content hash is automatically captured:
+
+```bash
+breadcrumb add ./src/api/client.ts "Retry delays tuned for rate limits"
+# Hash is stored → future changes detected
+```
+
+The `check` command also shows staleness for each note, helping agents understand which notes are trustworthy.
 
 ## Claude Code Plugin
 

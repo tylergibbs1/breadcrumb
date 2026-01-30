@@ -30,6 +30,10 @@ breadcrumb add ./src/auth.ts "OAuth flow depends on specific token format"
 breadcrumb add ./src/tax.ts "Ceiling division intentional for compliance"
 ```
 
+## Staleness
+
+When you see `[STALE]` prefix on a note, the file changed since the note was written. The note may be outdated—use judgment.
+
 ## Commands
 
 | Command | Purpose |
@@ -37,6 +41,7 @@ breadcrumb add ./src/tax.ts "Ceiling division intentional for compliance"
 | `breadcrumb add <path> "note"` | Add a note (warns about overlaps) |
 | `breadcrumb edit <path-or-id>` | Edit a note (`-m`, `-a`, `-s`) |
 | `breadcrumb check <path>` | See notes on a file |
+| `breadcrumb verify [path]` | Check if notes are stale (`--update` to refresh) |
 | `breadcrumb search <query>` | Find notes by content (`-r` for regex) |
 | `breadcrumb coverage [path]` | Show breadcrumb coverage stats |
 | `breadcrumb ls` | List all notes |

@@ -12,6 +12,7 @@ import { registerPruneCommand } from "./commands/prune.js";
 import { registerRmCommand } from "./commands/rm.js";
 import { registerSearchCommand } from "./commands/search.js";
 import { registerStatusCommand } from "./commands/status.js";
+import { registerVerifyCommand } from "./commands/verify.js";
 
 const program = new Command();
 
@@ -31,6 +32,7 @@ registerCoverageCommand(program);
 registerStatusCommand(program);
 registerLsCommand(program);
 registerPruneCommand(program);
+registerVerifyCommand(program);
 
 // Parse arguments
 program.parse();

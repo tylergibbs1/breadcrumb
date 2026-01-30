@@ -4,7 +4,7 @@ description: Leave notes on files for other agents to see in future sessions. Us
 license: MIT
 metadata:
   author: tylergibbs1
-  version: "3.3.0"
+  version: "3.5.0"
   keywords:
     - agent-communication
     - file-warnings
@@ -46,6 +46,7 @@ breadcrumb add ./src/api/users.ts "Retry logic tuned for rate limits"
 | `breadcrumb check <path>` | Check path for notes (`-r` for recursive) |
 | `breadcrumb add <path> <message>` | Leave a note (`-s` severity, `--ttl` expiration) |
 | `breadcrumb edit <path-or-id>` | Edit a note (`-m` message, `-a` append, `-s` severity) |
+| `breadcrumb verify [path]` | Check if notes are stale (`--update` to refresh hashes) |
 | `breadcrumb search <query>` | Find notes by content (`-r` for regex) |
 | `breadcrumb coverage [path]` | Show breadcrumb coverage stats |
 | `breadcrumb ls` | List all notes (`-s` filter by severity) |
@@ -53,9 +54,27 @@ breadcrumb add ./src/api/users.ts "Retry logic tuned for rate limits"
 | `breadcrumb rm <path>` | Remove a note (`-i` by ID) |
 | `breadcrumb prune` | Remove expired notes |
 
+## Staleness detection
+
+Notes track file content hashes. When you see `[STALE]` prefix:
+- The file has changed since the note was written
+- The note may no longer be accurate
+- Use judgment: the warning might still apply, or might be outdated
+
+```
+📝 BREADCRUMB: [STALE] Don't simplify this regex
+                ↑ Code changed - verify note still applies
+```
+
+After reviewing stale notes, update hashes with:
+```bash
+breadcrumb verify --update
+```
+
 ## Output format
 
 All commands output JSON. Key fields:
 - `status`: "clear", "info", or "warn"
 - `suggestion`: Actionable guidance when warnings exist
 - `breadcrumbs`: Array of matching breadcrumb objects
+- `staleness`: "verified", "stale", or "unknown" (per breadcrumb)
