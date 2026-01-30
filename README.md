@@ -117,8 +117,12 @@ Now when an agent tries to "simplify" this code:
 ```bash
 breadcrumb add <path> <message> [options]
   -s, --severity <level>   # info (default) or warn
+  -l, --line <range>       # Anchor to line (42) or range (42-50)
   -e, --expires <date>     # Expiration date (ISO 8601)
   --ttl <duration>         # Time-to-live (30s, 5m, 2h, 7d)
+  --evidence-input <str>   # Test input that would break if changed
+  --evidence-expected <str> # Expected behavior
+  --evidence-actual <str>  # What happens if code is changed (optional)
   --no-overlap-check       # Skip overlap detection
 ```
 
@@ -129,9 +133,15 @@ breadcrumb edit <path-or-id> [options]
   -m, --message <text>     # Replace message
   -a, --append <text>      # Append to message
   -s, --severity <level>   # Change severity
+  -l, --line <range>       # Update line anchor
   -e, --expires <date>     # Set expiration
   --ttl <duration>         # Set TTL
+  --evidence-input <str>   # Update evidence input
+  --evidence-expected <str> # Update evidence expected
+  --evidence-actual <str>  # Update evidence actual
   --clear-expiration       # Remove expiration
+  --clear-line             # Remove line anchor
+  --clear-evidence         # Remove evidence
 ```
 
 ### Search Options
@@ -153,6 +163,22 @@ breadcrumb coverage [path] [options]
   --show-covered           # List covered files
   --show-uncovered         # List uncovered files
   -l, --limit <n>          # Max files to list (default: 20)
+```
+
+### Check Options
+
+```bash
+breadcrumb check <path> [options]
+  -r, --recursive          # Check all files in directory
+  -c, --concise            # Token-efficient output for agents
+  --verify                 # Update hashes after checking
+```
+
+### List Options
+
+```bash
+breadcrumb ls [options]
+  --summary                # Return only counts (total, warnings, info)
 ```
 
 ### Verify Options
@@ -188,6 +214,58 @@ breadcrumb add ./src/api/client.ts "Retry delays tuned for rate limits"
 ```
 
 The `check` command also shows staleness for each note, helping agents understand which notes are trustworthy.
+
+## Line Anchoring
+
+Anchor notes to specific lines when the warning applies to a particular section:
+
+```bash
+# Single line
+breadcrumb add ./src/parser.ts "Lookbehind handles escapes" -l 142
+
+# Line range
+breadcrumb add ./src/auth.ts "Timing-safe comparison" -l 67-72
+```
+
+Output shows the anchored lines:
+
+```json
+{
+  "status": "info",
+  "suggestion": "Timing-safe comparison (lines 67-72)"
+}
+```
+
+## Evidence
+
+Attach proof to notes — the input that would break if the code changed:
+
+```bash
+breadcrumb add ./src/parser.ts "Regex handles escaped templates" \
+  --evidence-input '\${foo}' \
+  --evidence-expected 'should NOT match' \
+  --evidence-actual 'would match if simplified'
+```
+
+Evidence answers "what breaks?" — agents can verify whether their change triggers the failure case:
+
+```json
+{
+  "status": "info",
+  "suggestion": "Regex handles escaped templates\nEvidence:\n  Input: \\${foo}\n  Expected: should NOT match\n  If changed: would match if simplified"
+}
+```
+
+## Concise Mode
+
+For agents with limited context, use `-c` for token-efficient output:
+
+```bash
+breadcrumb check ./src/file.ts -c
+```
+
+**Before (~150 tokens):** Full metadata with id, hash, timestamps, added_by...
+**After (~40 tokens):** Just status and suggestion.
 
 ## Claude Code Plugin
 
