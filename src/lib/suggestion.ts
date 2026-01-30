@@ -1,4 +1,4 @@
-import type { Breadcrumb, Severity } from "./types.js";
+import type { Breadcrumb, Evidence, LineRange, Severity } from "./types.js";
 
 const SEVERITY_PRIORITY: Record<Severity, number> = {
   info: 1,
@@ -19,6 +19,23 @@ function extractFirstSentence(message: string): string {
   return message.trim();
 }
 
+function formatLineRange(line: LineRange): string {
+  if (line.end && line.end !== line.start) {
+    return `lines ${line.start}-${line.end}`;
+  }
+  return `line ${line.start}`;
+}
+
+function formatEvidence(evidence: Evidence): string {
+  const parts: string[] = [];
+  parts.push(`  Input: ${evidence.input}`);
+  parts.push(`  Expected: ${evidence.expected}`);
+  if (evidence.actual_if_changed) {
+    parts.push(`  If changed: ${evidence.actual_if_changed}`);
+  }
+  return parts.join("\n");
+}
+
 export function generateSuggestion(breadcrumbs: Breadcrumb[]): string | null {
   if (breadcrumbs.length === 0) {
     return null;
@@ -33,10 +50,18 @@ export function generateSuggestion(breadcrumbs: Breadcrumb[]): string | null {
 
   for (const breadcrumb of sorted) {
     const summary = extractFirstSentence(breadcrumb.message);
+    const lineInfo = breadcrumb.line ? ` (${formatLineRange(breadcrumb.line)})` : "";
+
     if (breadcrumb.severity === "warn") {
-      lines.push(`Proceed with caution. ${summary}`);
+      lines.push(`Proceed with caution${lineInfo}. ${summary}`);
     } else {
-      lines.push(summary);
+      lines.push(`${summary}${lineInfo}`);
+    }
+
+    // Include evidence if present
+    if (breadcrumb.evidence) {
+      lines.push("Evidence:");
+      lines.push(formatEvidence(breadcrumb.evidence));
     }
   }
 
@@ -45,8 +70,20 @@ export function generateSuggestion(breadcrumbs: Breadcrumb[]): string | null {
 
 export function generateSingleSuggestion(breadcrumb: Breadcrumb): string {
   const summary = extractFirstSentence(breadcrumb.message);
+  const lineInfo = breadcrumb.line ? ` (${formatLineRange(breadcrumb.line)})` : "";
+
+  const parts: string[] = [];
+
   if (breadcrumb.severity === "warn") {
-    return `Proceed with caution. ${summary}`;
+    parts.push(`Proceed with caution${lineInfo}. ${summary}`);
+  } else {
+    parts.push(`${summary}${lineInfo}`);
   }
-  return summary;
+
+  if (breadcrumb.evidence) {
+    parts.push("Evidence:");
+    parts.push(formatEvidence(breadcrumb.evidence));
+  }
+
+  return parts.join("\n");
 }

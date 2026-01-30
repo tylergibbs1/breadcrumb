@@ -10,6 +10,7 @@ export function registerLsCommand(program: Command): void {
     .description("List all breadcrumbs")
     .option("-e, --expired", "Include expired breadcrumbs")
     .option("-s, --severity <level>", "Filter by severity: info, warn")
+    .option("--summary", "Return only counts (token-efficient for agents)")
     .action(async (options) => {
       const configPath = await findConfigPath();
 
@@ -44,6 +45,16 @@ export function registerLsCommand(program: Command): void {
           if (b.severity === "warn") {
             warnings++;
           }
+        }
+
+        // Summary mode: return only counts (consolidates 'status' command)
+        if (options.summary) {
+          outputJson({
+            total: breadcrumbs.length,
+            warnings,
+            info: breadcrumbs.length - warnings,
+          });
+          return;
         }
 
         // Sort by severity (warn > info), then by path

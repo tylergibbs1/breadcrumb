@@ -87,7 +87,9 @@
       "added_by": {
         "agent_id": "agent"
       },
-      "added_at": "2026-01-30T02:59:00.921Z"
+      "added_at": "2026-01-30T02:59:00.921Z",
+      "code_hash": "742313ac41dad1fc",
+      "last_verified": "2026-01-30T19:18:09.199Z"
     },
     {
       "id": "b_EcR8hO",
@@ -214,7 +216,7 @@
       "id": "b_Oq7o7V",
       "path": "./src/lib/validation.ts",
       "pattern_type": "exact",
-      "message": "Shared validation helpers. validateSeverity() extracts duplicated logic from add/edit/ls/search commands.",
+      "message": "Shared validation: validateSeverity(), parseLineRange(), buildEvidence(). Extracts duplicated logic from add/edit commands.",
       "severity": "warn",
       "added_by": {
         "agent_id": "agent"

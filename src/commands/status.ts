@@ -5,7 +5,7 @@ import { outputError, outputJson } from "../lib/output.js";
 export function registerStatusCommand(program: Command): void {
   program
     .command("status")
-    .description("Show overview of breadcrumbs")
+    .description("Show overview of breadcrumbs (use 'ls --summary' instead)")
     .action(async () => {
       const configPath = await findConfigPath();
 

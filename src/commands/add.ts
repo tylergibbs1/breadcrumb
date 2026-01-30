@@ -11,8 +11,8 @@ import { parseTtl } from "../lib/expiration.js";
 import { computeFileHash } from "../lib/hash.js";
 import { detectPatternType, findOverlappingBreadcrumbs, type OverlapResult } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
-import type { Breadcrumb, Severity } from "../lib/types.js";
-import { validateSeverity } from "../lib/validation.js";
+import type { Breadcrumb } from "../lib/types.js";
+import { buildEvidence, parseLineRange, validateSeverity } from "../lib/validation.js";
 
 function formatOverlapMessage(overlap: OverlapResult): string {
   switch (overlap.overlap_type) {
@@ -38,6 +38,10 @@ export function registerAddCommand(program: Command): void {
     .option("-s, --severity <level>", "Severity level: info, warn", "warn")
     .option("-e, --expires <date>", "Expiration date (ISO 8601 or YYYY-MM-DD)")
     .option("--ttl <duration>", "Time-to-live (e.g., 30s, 5m, 2h, 7d)")
+    .option("-l, --line <range>", "Line number or range (e.g., 42 or 42-50)")
+    .option("--evidence-input <input>", "Test input that demonstrates the issue")
+    .option("--evidence-expected <expected>", "Expected behavior with this input")
+    .option("--evidence-actual <actual>", "What happens if the code is incorrectly changed")
     .option("--no-overlap-check", "Skip overlap detection warning")
     .action(async (path, message, options) => {
       const configPath = await findConfigPath();
@@ -85,6 +89,16 @@ export function registerAddCommand(program: Command): void {
         }
       }
 
+      // Parse and validate line range if provided
+      const lineRange = parseLineRange(options.line);
+
+      // Validate and build evidence if provided
+      const evidence = buildEvidence({
+        evidenceInput: options.evidenceInput,
+        evidenceExpected: options.evidenceExpected,
+        evidenceActual: options.evidenceActual,
+      });
+
       try {
         const config = await loadConfig(configPath);
 
@@ -124,6 +138,14 @@ export function registerAddCommand(program: Command): void {
 
         if (options.ttl) {
           breadcrumb.ttl = options.ttl;
+        }
+
+        if (lineRange) {
+          breadcrumb.line = lineRange;
+        }
+
+        if (evidence) {
+          breadcrumb.evidence = evidence;
         }
 
         // Capture code hash for exact file paths (enables staleness detection)

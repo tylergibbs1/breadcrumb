@@ -8,7 +8,7 @@ import type { Staleness, VerifyResult } from "../lib/types.js";
 export function registerVerifyCommand(program: Command): void {
   program
     .command("verify")
-    .description("Check staleness of breadcrumb notes against current file contents")
+    .description("Check staleness (use 'check --verify' for single files)")
     .argument("[path]", "Optional path to filter breadcrumbs")
     .option("--update", "Update hashes for verified/stale breadcrumbs")
     .option("--stale-only", "Only show stale breadcrumbs")
