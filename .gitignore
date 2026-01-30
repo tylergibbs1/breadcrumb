@@ -21,6 +21,3 @@ Thumbs.db
 # Test artifacts
 *.log
 coverage/
-
-# Breadcrumb data (users should not commit this)
-.breadcrumbs.json

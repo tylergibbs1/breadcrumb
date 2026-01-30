@@ -1,0 +1,225 @@
+{
+  "version": 2,
+  "breadcrumbs": [
+    {
+      "id": "b_bmJbJs",
+      "path": "./src/utils/parser.ts",
+      "pattern_type": "exact",
+      "message": "Don't simplify - handles unicode edge cases",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-29T21:42:17.451Z"
+    },
+    {
+      "id": "b_9SbWNB",
+      "path": "./src/lib/config.ts",
+      "pattern_type": "exact",
+      "message": "Core config management. generateId() uses Math.random (not cryptographically secure, but fine for IDs). findConfigPath walks up to filesystem root - correct. Good error handling.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:53:31.980Z"
+    },
+    {
+      "id": "b_lvbKqu",
+      "path": "./src/lib/output.ts",
+      "pattern_type": "exact",
+      "message": "Minimal JSON output helpers. outputError writes to stderr (correct). Consider adding exitCode param to outputError for consistency.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:53:32.643Z"
+    },
+    {
+      "id": "b_LrvHF7",
+      "path": "./src/commands/add.ts",
+      "pattern_type": "exact",
+      "message": "Good validation flow. Checks severity, date, TTL before modifying config. Prevents duplicates via path normalization. Uses resolve() consistently.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:53:52.100Z"
+    },
+    {
+      "id": "b_xgSrO6",
+      "path": "./src/commands/rm.ts",
+      "pattern_type": "exact",
+      "message": "Simple removal by path or ID. Uses non-null assertion (line 51) after findIndex - safe because breadcrumb was just found. Good error messages.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:53:53.458Z"
+    },
+    {
+      "id": "b_Gd00V3",
+      "path": "./src/commands/prune.ts",
+      "pattern_type": "exact",
+      "message": "Efficient single-pass partitioning. Dry-run mode is useful. Idempotent (no config = success). Only writes if changes made.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:53:56.632Z"
+    },
+    {
+      "id": "b_863bXk",
+      "path": "./src/commands/claim.ts",
+      "pattern_type": "exact",
+      "message": "WIP claiming with session/TTL scope. DEFAULT_TTL 2h when no session available (platform-agnostic). Good fallback design.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:53:57.412Z"
+    },
+    {
+      "id": "b_VwvsrJ",
+      "path": "./src/commands/release.ts",
+      "pattern_type": "exact",
+      "message": "Idempotent release (always succeeds). Session-aware: releases own claims if session present, TTL-only claims otherwise. Smart design.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:53:58.281Z"
+    },
+    {
+      "id": "b_LbaUES",
+      "path": "./src/commands/session-end.ts",
+      "pattern_type": "exact",
+      "message": "Session cleanup. Trims and validates session ID. Handles missing config gracefully. Returns removed breadcrumb list for transparency.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:54:07.277Z"
+    },
+    {
+      "id": "b_ezozYL",
+      "path": "./src/lib/schema.ts",
+      "pattern_type": "exact",
+      "message": "Solid Zod schema definitions. ID regex validation is tight (b_XXXXXX). Expires field accepts ISO datetime or YYYY-MM-DD.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:58:59.401Z"
+    },
+    {
+      "id": "b_qFpjg6",
+      "path": "./src/lib/types.ts",
+      "pattern_type": "exact",
+      "message": "Well-structured types. All interfaces properly typed. Severity type used across codebase.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:59:00.921Z"
+    },
+    {
+      "id": "b_EcR8hO",
+      "path": "./src/lib/suggestion.ts",
+      "pattern_type": "exact",
+      "message": "Clean suggestion generation. SEVERITY_PRIORITY co-located here. extractFirstSentence avoids splitting on periods in filenames.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:59:01.755Z"
+    },
+    {
+      "id": "b_7aLUtn",
+      "path": "./src/commands/init.ts",
+      "pattern_type": "exact",
+      "message": "Simple init with --force option. Reuses saveConfig for consistency.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T02:59:02.814Z"
+    },
+    {
+      "id": "b_5MhqMj",
+      "path": "./src/commands/check.ts",
+      "pattern_type": "exact",
+      "message": "Recursive check with O(1) deduplication via Set. Skips hidden dirs and node_modules. Exit codes: 0=clear/info, 1=warn.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T03:06:11.148Z"
+    },
+    {
+      "id": "b_RtjaVm",
+      "path": "./src/commands/ls.ts",
+      "pattern_type": "exact",
+      "message": "Single-pass filtering and stats collection. Sorts by severity then path. Efficient O(n) implementation.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T03:06:12.419Z"
+    },
+    {
+      "id": "b_MVsEKm",
+      "path": "./src/commands/status.ts",
+      "pattern_type": "exact",
+      "message": "Single-pass stats collection. Categorizes claims vs warnings efficiently. Counts unique sessions.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T03:06:13.835Z"
+    },
+    {
+      "id": "b_KMhlAm",
+      "path": "./src/lib/expiration.ts",
+      "pattern_type": "exact",
+      "message": "TTL/expiration logic. DURATION_REGEX pre-compiled. Non-null assertions on regex captures for noUncheckedIndexedAccess.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T03:11:17.559Z"
+    },
+    {
+      "id": "b_4iiDTC",
+      "path": "./src/lib/matcher.ts",
+      "pattern_type": "exact",
+      "message": "Bun-only: Uses native Bun.Glob for pattern matching and file scanning. Cached cwd, pre-compiled regex. Zero npm glob dependencies.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T03:15:12.799Z"
+    },
+    {
+      "id": "b_2ezaMm",
+      "path": "./src/commands/wait.ts",
+      "pattern_type": "exact",
+      "message": "Bun-only: Uses native Bun.sleep for async waiting. Configurable timeout/poll. Only blocks on active claims.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T03:15:13.986Z"
+    },
+    {
+      "id": "b_I9Lfac",
+      "path": "./src/index.ts",
+      "pattern_type": "exact",
+      "message": "Entry point with Bun runtime check. Gives helpful install instructions if run with Node.js.",
+      "severity": "info",
+      "added_by": {
+        "agent_id": "agent"
+      },
+      "added_at": "2026-01-30T03:16:38.205Z"
+    }
+  ]
+}
