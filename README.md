@@ -109,7 +109,6 @@ Now when an agent tries to "simplify" this code:
 For Claude Code users, the plugin auto-shows notes when reading files:
 
 ```bash
-# Install from marketplace
 /plugin marketplace add tylergibbs1/breadcrumb
 /plugin install breadcrumb@breadcrumb-marketplace
 ```
