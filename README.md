@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/breadcrumb-cli)](https://www.npmjs.com/package/breadcrumb-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![Bun](https://img.shields.io/badge/Bun-1.0-black)](https://bun.sh/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
 
 ![Breadcrumb Demo](public/demo.png)
 
@@ -23,13 +23,15 @@ breadcrumb add ./src/parser.ts "Regex handles unicode edge cases, don't simplify
 
 ## Installation
 
-**Requires [Bun](https://bun.sh) runtime.**
+```bash
+npm install -g breadcrumb-cli
+```
+
+Or with other package managers:
 
 ```bash
-# Install Bun (if you don't have it)
-curl -fsSL https://bun.sh/install | bash
-
-# Install breadcrumb
+pnpm add -g breadcrumb-cli
+yarn global add breadcrumb-cli
 bun add -g breadcrumb-cli
 ```
 
@@ -173,7 +175,7 @@ Breadcrumb works with **any AI agent system** that can run shell commands.
 
 | Component | Requirement |
 |-----------|-------------|
-| CLI (`breadcrumb`) | Bun runtime |
+| CLI (`breadcrumb`) | Node.js 18+ (or Bun) |
 | `.breadcrumbs.json` | Plain JSON - works everywhere |
 | Claude Code plugin | Optional integration |
 

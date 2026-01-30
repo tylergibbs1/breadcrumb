@@ -1,4 +1,4 @@
-import { Glob } from "bun";
+import fg from "fast-glob";
 import { resolve } from "node:path";
 import type { Command } from "commander";
 import { findConfigPath, loadConfig } from "../lib/config.js";
@@ -35,20 +35,13 @@ function getExitCode(status: "clear" | Severity): number {
 }
 
 async function getAllFilesRecursively(dir: string): Promise<string[]> {
-  const glob = new Glob("**/*");
-  const files: string[] = [];
-  for await (const file of glob.scan({
+  return fg("**/*", {
     cwd: dir,
     absolute: true,
     dot: false,
     onlyFiles: true,
-  })) {
-    // Skip node_modules
-    if (!file.includes("/node_modules/")) {
-      files.push(file);
-    }
-  }
-  return files;
+    ignore: ["**/node_modules/**"],
+  });
 }
 
 export function registerCheckCommand(program: Command): void {

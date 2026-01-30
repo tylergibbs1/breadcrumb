@@ -4,9 +4,10 @@ import type { Severity } from "./types.js";
 const VALID_SEVERITIES: Severity[] = ["info", "warn"];
 
 /**
- * Validate severity option and exit with error if invalid.
+ * Validate severity option and return the typed value.
+ * Exits with error if invalid.
  */
-export function validateSeverity(severity: string): severity is Severity {
+export function validateSeverity(severity: string): Severity {
   if (!VALID_SEVERITIES.includes(severity as Severity)) {
     outputError(
       "INVALID_SEVERITY",
@@ -14,5 +15,5 @@ export function validateSeverity(severity: string): severity is Severity {
     );
     process.exit(1);
   }
-  return true;
+  return severity as Severity;
 }

@@ -38,9 +38,9 @@ export function registerSearchCommand(program: Command): void {
       }
 
       // Validate severity filter
-      if (options.severity) {
-        validateSeverity(options.severity);
-      }
+      const severityFilter = options.severity
+        ? validateSeverity(options.severity)
+        : null;
 
       // Determine case sensitivity:
       // - Regex mode: case-sensitive by default, -i makes it insensitive
@@ -80,7 +80,7 @@ export function registerSearchCommand(program: Command): void {
           if (!options.expired && isExpired(b)) continue;
 
           // Filter by severity
-          if (options.severity && b.severity !== options.severity) continue;
+          if (severityFilter && b.severity !== severityFilter) continue;
 
           // Filter by path segment (must match a complete directory or filename)
           if (options.path && !matchesPathSegment(b.path, options.path)) continue;

@@ -10,7 +10,7 @@ import {
 import { parseTtl } from "../lib/expiration.js";
 import { detectPatternType, findOverlappingBreadcrumbs, type OverlapResult } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
-import type { Breadcrumb } from "../lib/types.js";
+import type { Breadcrumb, Severity } from "../lib/types.js";
 import { validateSeverity } from "../lib/validation.js";
 
 function formatOverlapMessage(overlap: OverlapResult): string {
@@ -50,7 +50,7 @@ export function registerAddCommand(program: Command): void {
       }
 
       // Validate severity
-      validateSeverity(options.severity);
+      const severity = validateSeverity(options.severity);
 
       // Validate expiration date if provided
       if (options.expires) {
@@ -112,7 +112,7 @@ export function registerAddCommand(program: Command): void {
           path,
           pattern_type: patternType,
           message,
-          severity: options.severity as Severity,
+          severity,
           added_by: buildAddedBy(),
           added_at: new Date().toISOString(),
         };

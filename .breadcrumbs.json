@@ -159,7 +159,7 @@
       "id": "b_4iiDTC",
       "path": "./src/lib/matcher.ts",
       "pattern_type": "exact",
-      "message": "Bun-only: Uses native Bun.Glob for pattern matching. No cwd caching (handles chdir). Improved glob intersection detection reduces false positives.",
+      "message": "Uses minimatch and fast-glob for pattern matching. No cwd caching (handles chdir). Improved glob intersection detection reduces false positives.",
       "severity": "info",
       "added_by": {
         "agent_id": "agent"
@@ -170,7 +170,7 @@
       "id": "b_I9Lfac",
       "path": "./src/index.ts",
       "pattern_type": "exact",
-      "message": "Entry point with Bun runtime check. Gives helpful install instructions if run with Node.js.",
+      "message": "CLI entry point. Works with Node.js 18+ and Bun.",
       "severity": "info",
       "added_by": {
         "agent_id": "agent"

@@ -1,7 +1,6 @@
 import { resolve } from "node:path";
 import type { Command } from "commander";
 import {
-  findBreadcrumbById,
   findConfigPath,
   loadConfig,
   saveConfig,
@@ -51,9 +50,9 @@ export function registerEditCommand(program: Command): void {
       }
 
       // Validate severity if provided
-      if (options.severity) {
-        validateSeverity(options.severity);
-      }
+      const validatedSeverity = options.severity
+        ? validateSeverity(options.severity)
+        : null;
 
       // Validate expiration date if provided
       if (options.expires) {
@@ -133,7 +132,7 @@ export function registerEditCommand(program: Command): void {
           process.exit(1);
         }
 
-        const breadcrumb = config.breadcrumbs[breadcrumbIndex];
+        const breadcrumb = config.breadcrumbs[breadcrumbIndex]!;
         const originalMessage = breadcrumb.message;
 
         // Apply edits (preserving id and added_at)
@@ -145,8 +144,8 @@ export function registerEditCommand(program: Command): void {
           breadcrumb.message = `${breadcrumb.message} ${options.append}`;
         }
 
-        if (options.severity) {
-          breadcrumb.severity = options.severity as Severity;
+        if (validatedSeverity) {
+          breadcrumb.severity = validatedSeverity;
         }
 
         if (options.clearExpiration) {

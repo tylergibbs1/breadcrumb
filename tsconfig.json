@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    // Environment setup & latest features (Bun recommended)
+    // Environment setup & latest features
     "lib": ["ESNext"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
 
-    // Bundler mode (Bun recommended)
+    // Bundler mode (works with tsup/tsx)
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
 
-    // Best practices (Bun recommended)
+    // Best practices
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
@@ -22,7 +22,7 @@
 
     // Project structure
     "rootDir": "src",
-    "types": ["bun-types"]
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

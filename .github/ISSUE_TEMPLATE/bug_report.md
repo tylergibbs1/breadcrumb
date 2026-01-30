@@ -20,7 +20,7 @@ What you expected to happen.
 
 **Environment**
 - OS: [e.g. macOS 14.0]
-- Node/Bun version: [e.g. bun 1.0.0]
+- Node version: [e.g. v20.0.0]
 - Breadcrumb version: [e.g. 1.0.0]
 
 **Additional context**

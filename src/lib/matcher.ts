@@ -1,4 +1,5 @@
-import { Glob } from "bun";
+import fg from "fast-glob";
+import { minimatch } from "minimatch";
 import { basename, dirname, resolve } from "node:path";
 import { isExpired } from "./expiration.js";
 import type { Breadcrumb, PatternType } from "./types.js";
@@ -53,16 +54,13 @@ export function matchesPath(
         ? normalizedTarget.slice(cwd.length + 1)
         : toPosix(targetPath).replace(/^\.\//, "");
 
-      // Use Bun's native Glob for fast pattern matching
-      const glob = new Glob(pattern);
-
       // Simple patterns (no path separator) match against filename
       if (!pattern.includes("/")) {
-        return glob.match(basename(normalizedTarget));
+        return minimatch(basename(normalizedTarget), pattern, { dot: true });
       }
 
       // Complex patterns match against relative path
-      return glob.match(relativePath);
+      return minimatch(relativePath, pattern, { dot: true });
     }
 
     default:
@@ -88,13 +86,7 @@ export function findMatchingBreadcrumbs(
 }
 
 export async function expandGlobPattern(pattern: string): Promise<string[]> {
-  // Use Bun's native Glob for fast file scanning
-  const glob = new Glob(pattern);
-  const results: string[] = [];
-  for await (const file of glob.scan({ cwd: ".", absolute: true, dot: true, onlyFiles: false })) {
-    results.push(file);
-  }
-  return results;
+  return fg(pattern, { cwd: ".", absolute: true, dot: true, onlyFiles: false });
 }
 
 export interface OverlapResult {
@@ -179,13 +171,11 @@ function wouldMatch(
         ? normalizedTarget.slice(cwd.length + 1)
         : toPosix(targetPath).replace(/^\.\//, "");
 
-      const glob = new Glob(pattern);
-
       if (!pattern.includes("/")) {
-        return glob.match(basename(normalizedTarget));
+        return minimatch(basename(normalizedTarget), pattern, { dot: true });
       }
 
-      return glob.match(relativePath);
+      return minimatch(relativePath, pattern, { dot: true });
     }
 
     default:
@@ -321,6 +311,6 @@ function extractBaseDirectory(path: string, type: PatternType): string | null {
  */
 function extractExtensionPattern(path: string): string | null {
   const match = path.match(/\*\.(\w+)$/);
-  return match ? match[1] : null;
+  return match?.[1] ?? null;
 }
 

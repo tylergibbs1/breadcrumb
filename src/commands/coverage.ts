@@ -1,4 +1,4 @@
-import { Glob } from "bun";
+import fg from "fast-glob";
 import { basename, relative, resolve } from "node:path";
 import type { Command } from "commander";
 import { findConfigPath, isExpired, loadConfig } from "../lib/config.js";
@@ -19,27 +19,19 @@ async function getFilesInDirectory(
   dir: string,
   pattern: string
 ): Promise<string[]> {
-  const glob = new Glob(pattern);
-  const files: string[] = [];
-
-  for await (const file of glob.scan({
+  const files = await fg(pattern, {
     cwd: dir,
     absolute: true,
     dot: false,
     onlyFiles: true,
-  })) {
-    // Skip common non-source directories
-    if (
-      file.includes("/node_modules/") ||
-      file.includes("/.git/") ||
-      file.includes("/dist/") ||
-      file.includes("/build/") ||
-      file.includes("/.next/")
-    ) {
-      continue;
-    }
-    files.push(file);
-  }
+    ignore: [
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.next/**",
+    ],
+  });
 
   return files.sort();
 }

@@ -1,6 +1,6 @@
 {
   "name": "breadcrumb-cli",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Agent-to-agent coordination via file-attached warnings",
   "author": "Tyler Gibbs",
   "license": "MIT",
@@ -30,20 +30,26 @@
     "session-management"
   ],
   "engines": {
-    "bun": ">=1.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
-    "dev": "bun run src/index.ts",
-    "build": "bun build src/index.ts --outfile dist/index.js --target=bun",
-    "test": "bun test",
+    "dev": "tsx src/index.ts",
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "build:bun": "bun build src/index.ts --outfile dist/index.js --target=bun",
+    "test": "node --test",
+    "test:bun": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "commander": "^12.1.0",
+    "fast-glob": "^3.3.2",
+    "minimatch": "^10.0.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/bun": "^1.1.6",
+    "@types/node": "^20.11.0",
+    "tsup": "^8.0.1",
+    "tsx": "^4.7.0",
     "typescript": "^5.5.3"
   }
 }

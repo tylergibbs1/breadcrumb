@@ -22,9 +22,9 @@ export function registerLsCommand(program: Command): void {
       }
 
       // Validate severity filter
-      if (options.severity) {
-        validateSeverity(options.severity);
-      }
+      const severityFilter = options.severity
+        ? validateSeverity(options.severity)
+        : null;
 
       try {
         const config = await loadConfig(configPath);
@@ -37,7 +37,7 @@ export function registerLsCommand(program: Command): void {
           // Filter expired
           if (!options.expired && isExpired(b)) continue;
           // Filter by severity
-          if (options.severity && b.severity !== options.severity) continue;
+          if (severityFilter && b.severity !== severityFilter) continue;
 
           breadcrumbs.push(b);
 

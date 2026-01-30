@@ -1,30 +1,29 @@
 ---
 name: breadcrumb
-description: Coordinate with other agents via file-attached warnings. Check before editing files, claim files you're working on, release when done.
+description: Leave notes on files for other agents to see in future sessions. Use after making non-obvious changes, fixing tricky bugs, or when code looks wrong but is intentional.
 license: MIT
 metadata:
   author: tylergibbs1
-  version: "2.1.3"
+  version: "3.3.0"
   keywords:
     - agent-communication
     - file-warnings
     - session-coordination
     - context-sharing
-    - work-in-progress
 ---
 
 # Breadcrumb
 
-Prevent conflicts between agents working on the same codebase.
+Leave notes on files that persist across agent sessions.
 
-## When to use each command
+## When to use
 
-| Command | Use when... |
-|---------|-------------|
-| `check` | **Before editing any file** - see if another agent is working on it |
-| `claim` | **Starting work** on a file - warn other agents you're modifying it |
-| `release` | **Finishing work** - let other agents know the file is free |
-| `status` | You want to see what files are currently being worked on |
+After making changes that future agents might misunderstand:
+- Non-obvious code that looks like it could be simplified
+- Bug fixes for edge cases
+- Intentional workarounds
+- Security-critical patterns
+- Performance tuning
 
 ## Core workflow
 
@@ -32,38 +31,27 @@ Prevent conflicts between agents working on the same codebase.
 ```bash
 breadcrumb check ./src/api/users.ts
 ```
-- Exit 0 = safe to proceed
+- Exit 0 = safe to proceed (clear/info)
 - Exit 1 = warning exists, read the `suggestion` field
 
-**2. Claim what you're working on:**
+**2. After non-obvious changes, leave a note:**
 ```bash
-breadcrumb claim ./src/api/users.ts "Refactoring auth logic"
-```
-Claims auto-expire after 2 hours by default.
-
-**3. Release when done:**
-```bash
-breadcrumb release ./src/api/users.ts
-```
-
-## Leaving permanent notes
-
-For context that should persist:
-```bash
-breadcrumb add ./src/billing/tax.ts "Ceiling division is intentional for compliance" --severity info
+breadcrumb add ./src/api/users.ts "Retry logic tuned for rate limits"
 ```
 
 ## Command reference
 
-| Command | Arguments | Purpose |
-|---------|-----------|---------|
-| `check <path>` | `--recursive` | Check path for warnings |
-| `claim <path> [message]` | `--task`, `--ttl` | Mark as work-in-progress (default: 2h TTL) |
-| `release <path>` | | Release your claim |
-| `status` | | Overview of active work |
-| `add <path> <message>` | `--severity`, `--ttl`, `--task` | Leave permanent context |
-| `ls` | `--active` | List all breadcrumbs |
-| `rm <path>` | | Remove a breadcrumb |
+| Command | Purpose |
+|---------|---------|
+| `breadcrumb check <path>` | Check path for notes (`-r` for recursive) |
+| `breadcrumb add <path> <message>` | Leave a note (`-s` severity, `--ttl` expiration) |
+| `breadcrumb edit <path-or-id>` | Edit a note (`-m` message, `-a` append, `-s` severity) |
+| `breadcrumb search <query>` | Find notes by content (`-r` for regex) |
+| `breadcrumb coverage [path]` | Show breadcrumb coverage stats |
+| `breadcrumb ls` | List all notes (`-s` filter by severity) |
+| `breadcrumb status` | Quick overview (counts) |
+| `breadcrumb rm <path>` | Remove a note (`-i` by ID) |
+| `breadcrumb prune` | Remove expired notes |
 
 ## Output format
 
