@@ -145,8 +145,10 @@ Notes are stored in `.breadcrumbs.json` at repo root:
     {
       "id": "b_1a2b3c",
       "path": "src/utils/money.js",
+      "pattern_type": "exact",
       "message": "All money as integers (cents) to avoid floating point errors",
       "severity": "info",
+      "added_by": { "agent_id": "agent" },
       "added_at": "2026-01-10T14:30:00Z"
     }
   ]

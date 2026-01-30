@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v breadcrumb >/dev/null 2>&1 || npm install -g breadcrumb-cli >/dev/null 2>&1; [ -f .breadcrumbs.json ] || breadcrumb init >/dev/null 2>&1; exit 0"
+            "command": "command -v breadcrumb >/dev/null 2>&1 || bun add -g breadcrumb-cli >/dev/null 2>&1; [ -f .breadcrumbs.json ] || breadcrumb init >/dev/null 2>&1; exit 0"
           }
         ]
       }
