@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Command } from "commander";
 import { createEmptyConfig, saveConfig } from "../lib/config.js";
@@ -9,16 +8,16 @@ export function registerInitCommand(program: Command): void {
     .command("init")
     .description("Initialize a new .breadcrumbs.json file")
     .option("-f, --force", "Overwrite existing config file")
-    .action((options) => {
+    .action(async (options) => {
       const configPath = join(process.cwd(), ".breadcrumbs.json");
 
-      if (existsSync(configPath) && !options.force) {
+      if ((await Bun.file(configPath).exists()) && !options.force) {
         outputError("CONFIG_EXISTS", `Config file already exists at ${configPath}. Use --force to overwrite.`);
         process.exit(1);
       }
 
       const config = createEmptyConfig();
-      saveConfig(configPath, config);
+      await saveConfig(configPath, config);
 
       outputJson({
         success: true,

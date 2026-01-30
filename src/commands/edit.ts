@@ -9,6 +9,7 @@ import {
 import { parseTtl } from "../lib/expiration.js";
 import { outputError, outputJson } from "../lib/output.js";
 import type { Severity } from "../lib/types.js";
+import { validateSeverity } from "../lib/validation.js";
 
 export function registerEditCommand(program: Command): void {
   program
@@ -51,14 +52,7 @@ export function registerEditCommand(program: Command): void {
 
       // Validate severity if provided
       if (options.severity) {
-        const validSeverities: Severity[] = ["info", "warn"];
-        if (!validSeverities.includes(options.severity)) {
-          outputError(
-            "INVALID_SEVERITY",
-            `Invalid severity '${options.severity}'. Must be one of: ${validSeverities.join(", ")}`
-          );
-          process.exit(1);
-        }
+        validateSeverity(options.severity);
       }
 
       // Validate expiration date if provided

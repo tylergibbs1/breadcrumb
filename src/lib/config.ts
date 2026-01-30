@@ -1,4 +1,3 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { isExpired } from "./expiration.js";
 import { ConfigSchema } from "./schema.js";
@@ -8,7 +7,7 @@ export { isExpired };
 
 const CONFIG_FILENAME = ".breadcrumbs.json";
 
-export function findConfigPath(startDir?: string): string | null {
+export async function findConfigPath(startDir?: string): Promise<string | null> {
   const envPath = process.env.BREADCRUMB_FILE;
   if (envPath) {
     return resolve(envPath);
@@ -18,7 +17,7 @@ export function findConfigPath(startDir?: string): string | null {
 
   while (true) {
     const configPath = join(currentDir, CONFIG_FILENAME);
-    if (existsSync(configPath)) {
+    if (await Bun.file(configPath).exists()) {
       return configPath;
     }
     const parent = dirname(currentDir);
@@ -29,9 +28,8 @@ export function findConfigPath(startDir?: string): string | null {
   return null;
 }
 
-export function loadConfig(configPath: string): BreadcrumbConfig {
-  const content = readFileSync(configPath, "utf-8");
-  const data = JSON.parse(content);
+export async function loadConfig(configPath: string): Promise<BreadcrumbConfig> {
+  const data = await Bun.file(configPath).json();
   const result = ConfigSchema.safeParse(data);
 
   if (!result.success) {
@@ -41,9 +39,9 @@ export function loadConfig(configPath: string): BreadcrumbConfig {
   return result.data as BreadcrumbConfig;
 }
 
-export function saveConfig(configPath: string, config: BreadcrumbConfig): void {
+export async function saveConfig(configPath: string, config: BreadcrumbConfig): Promise<void> {
   const content = JSON.stringify(config, null, 2) + "\n";
-  writeFileSync(configPath, content, "utf-8");
+  await Bun.write(configPath, content);
 }
 
 export function createEmptyConfig(): BreadcrumbConfig {

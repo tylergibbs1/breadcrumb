@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { findConfigPath, isExpired, loadConfig } from "../lib/config.js";
 import { outputError, outputJson } from "../lib/output.js";
 import type { Severity } from "../lib/types.js";
+import { validateSeverity } from "../lib/validation.js";
 
 export function registerLsCommand(program: Command): void {
   program
@@ -9,8 +10,8 @@ export function registerLsCommand(program: Command): void {
     .description("List all breadcrumbs")
     .option("-e, --expired", "Include expired breadcrumbs")
     .option("-s, --severity <level>", "Filter by severity: info, warn")
-    .action((options) => {
-      const configPath = findConfigPath();
+    .action(async (options) => {
+      const configPath = await findConfigPath();
 
       if (!configPath) {
         outputError(
@@ -22,18 +23,11 @@ export function registerLsCommand(program: Command): void {
 
       // Validate severity filter
       if (options.severity) {
-        const validSeverities: Severity[] = ["info", "warn"];
-        if (!validSeverities.includes(options.severity)) {
-          outputError(
-            "INVALID_SEVERITY",
-            `Invalid severity '${options.severity}'. Must be one of: ${validSeverities.join(", ")}`
-          );
-          process.exit(1);
-        }
+        validateSeverity(options.severity);
       }
 
       try {
-        const config = loadConfig(configPath);
+        const config = await loadConfig(configPath);
 
         // Single-pass filtering and stats collection
         const breadcrumbs: typeof config.breadcrumbs = [];

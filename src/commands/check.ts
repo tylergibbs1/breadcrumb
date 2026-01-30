@@ -1,5 +1,5 @@
-import { readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { Glob } from "bun";
+import { resolve } from "node:path";
 import type { Command } from "commander";
 import { findConfigPath, loadConfig } from "../lib/config.js";
 import { findMatchingBreadcrumbs } from "../lib/matcher.js";
@@ -34,22 +34,20 @@ function getExitCode(status: "clear" | Severity): number {
   }
 }
 
-function getAllFilesRecursively(dir: string): string[] {
+async function getAllFilesRecursively(dir: string): Promise<string[]> {
+  const glob = new Glob("**/*");
   const files: string[] = [];
-  const entries = readdirSync(dir, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const fullPath = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      // Skip hidden directories and node_modules
-      if (!entry.name.startsWith(".") && entry.name !== "node_modules") {
-        files.push(...getAllFilesRecursively(fullPath));
-      }
-    } else {
-      files.push(fullPath);
+  for await (const file of glob.scan({
+    cwd: dir,
+    absolute: true,
+    dot: false,
+    onlyFiles: true,
+  })) {
+    // Skip node_modules
+    if (!file.includes("/node_modules/")) {
+      files.push(file);
     }
   }
-
   return files;
 }
 
@@ -59,8 +57,8 @@ export function registerCheckCommand(program: Command): void {
     .description("Check a path for breadcrumb warnings")
     .argument("<path>", "File or directory path to check")
     .option("-r, --recursive", "Recursively check all files in directory")
-    .action((path, options) => {
-      const configPath = findConfigPath();
+    .action(async (path, options) => {
+      const configPath = await findConfigPath();
 
       if (!configPath) {
         outputError(
@@ -71,7 +69,7 @@ export function registerCheckCommand(program: Command): void {
       }
 
       try {
-        const config = loadConfig(configPath);
+        const config = await loadConfig(configPath);
         const targetPath = resolve(path);
 
         let pathsToCheck: string[] = [targetPath];
@@ -79,14 +77,15 @@ export function registerCheckCommand(program: Command): void {
         // Handle recursive directory check
         if (options.recursive) {
           try {
-            const stat = statSync(targetPath);
-            if (stat.isDirectory()) {
-              pathsToCheck = getAllFilesRecursively(targetPath);
+            // Try to scan as directory - will throw if not a directory
+            const files = await getAllFilesRecursively(targetPath);
+            if (files.length > 0) {
+              pathsToCheck = files;
               // Also include the directory itself
               pathsToCheck.unshift(targetPath);
             }
           } catch {
-            // If stat fails, just check the single path
+            // If scan fails, just check the single path
           }
         }
 

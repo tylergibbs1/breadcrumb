@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { findConfigPath, isExpired, loadConfig } from "../lib/config.js";
 import { outputError, outputJson } from "../lib/output.js";
 import type { Breadcrumb, Severity } from "../lib/types.js";
+import { validateSeverity } from "../lib/validation.js";
 
 /**
  * Check if a path contains a matching segment (directory or filename).
@@ -38,14 +39,7 @@ export function registerSearchCommand(program: Command): void {
 
       // Validate severity filter
       if (options.severity) {
-        const validSeverities: Severity[] = ["info", "warn"];
-        if (!validSeverities.includes(options.severity)) {
-          outputError(
-            "INVALID_SEVERITY",
-            `Invalid severity '${options.severity}'. Must be one of: ${validSeverities.join(", ")}`
-          );
-          process.exit(1);
-        }
+        validateSeverity(options.severity);
       }
 
       // Determine case sensitivity:

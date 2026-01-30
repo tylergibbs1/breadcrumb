@@ -6,8 +6,8 @@ export function registerStatusCommand(program: Command): void {
   program
     .command("status")
     .description("Show overview of breadcrumbs")
-    .action(() => {
-      const configPath = findConfigPath();
+    .action(async () => {
+      const configPath = await findConfigPath();
 
       if (!configPath) {
         outputError(
@@ -18,7 +18,7 @@ export function registerStatusCommand(program: Command): void {
       }
 
       try {
-        const config = loadConfig(configPath);
+        const config = await loadConfig(configPath);
 
         let total = 0;
         let warnings = 0;

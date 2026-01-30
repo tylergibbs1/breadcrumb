@@ -10,7 +10,8 @@ import {
 import { parseTtl } from "../lib/expiration.js";
 import { detectPatternType, findOverlappingBreadcrumbs, type OverlapResult } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
-import type { Breadcrumb, Severity } from "../lib/types.js";
+import type { Breadcrumb } from "../lib/types.js";
+import { validateSeverity } from "../lib/validation.js";
 
 function formatOverlapMessage(overlap: OverlapResult): string {
   switch (overlap.overlap_type) {
@@ -49,14 +50,7 @@ export function registerAddCommand(program: Command): void {
       }
 
       // Validate severity
-      const validSeverities: Severity[] = ["info", "warn"];
-      if (!validSeverities.includes(options.severity)) {
-        outputError(
-          "INVALID_SEVERITY",
-          `Invalid severity '${options.severity}'. Must be one of: ${validSeverities.join(", ")}`
-        );
-        process.exit(1);
-      }
+      validateSeverity(options.severity);
 
       // Validate expiration date if provided
       if (options.expires) {
