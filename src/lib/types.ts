@@ -4,8 +4,6 @@ export type PatternType = "exact" | "directory" | "glob";
 
 export interface AddedBy {
   agent_id: string;
-  session_id?: string;
-  task?: string;
 }
 
 export interface Breadcrumb {
@@ -18,7 +16,6 @@ export interface Breadcrumb {
   added_at: string;
   expires?: string;
   ttl?: string;
-  session_id?: string;
 }
 
 export interface BreadcrumbConfig {

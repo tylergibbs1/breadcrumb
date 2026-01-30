@@ -6,8 +6,6 @@ export const PatternTypeSchema = z.enum(["exact", "directory", "glob"]);
 
 export const AddedBySchema = z.object({
   agent_id: z.string().min(1, "agent_id is required"),
-  session_id: z.string().optional(),
-  task: z.string().optional(),
 });
 
 export const BreadcrumbSchema = z.object({
@@ -24,7 +22,6 @@ export const BreadcrumbSchema = z.object({
     .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
     .optional(),
   ttl: z.string().regex(/^\d+[smhd]$/, "TTL must be like 30s, 5m, 2h, or 7d").optional(),
-  session_id: z.string().optional(),
 });
 
 export const ConfigSchema = z.object({

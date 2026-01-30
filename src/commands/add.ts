@@ -21,8 +21,6 @@ export function registerAddCommand(program: Command): void {
     .option("-s, --severity <level>", "Severity level: info, warn", "warn")
     .option("-e, --expires <date>", "Expiration date (ISO 8601 or YYYY-MM-DD)")
     .option("--ttl <duration>", "Time-to-live (e.g., 30s, 5m, 2h, 7d)")
-    .option("--session <id>", "Session ID (breadcrumb expires when session ends)")
-    .option("-t, --task <task>", "Task description for context")
     .action((path, message, options) => {
       const configPath = findConfigPath();
 
@@ -93,7 +91,6 @@ export function registerAddCommand(program: Command): void {
         }
 
         const patternType = detectPatternType(path);
-        const sessionId = options.session || process.env.BREADCRUMB_SESSION_ID || process.env.CLAUDE_SESSION_ID;
 
         const breadcrumb: Breadcrumb = {
           id: generateId(),
@@ -101,13 +98,9 @@ export function registerAddCommand(program: Command): void {
           pattern_type: patternType,
           message,
           severity: options.severity as Severity,
-          added_by: buildAddedBy({ sessionId, task: options.task }),
+          added_by: buildAddedBy(),
           added_at: new Date().toISOString(),
         };
-
-        if (sessionId) {
-          breadcrumb.session_id = sessionId;
-        }
 
         if (options.expires) {
           breadcrumb.expires = new Date(options.expires).toISOString();

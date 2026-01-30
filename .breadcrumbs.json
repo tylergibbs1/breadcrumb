@@ -68,39 +68,6 @@
       "added_at": "2026-01-30T02:53:56.632Z"
     },
     {
-      "id": "b_863bXk",
-      "path": "./src/commands/claim.ts",
-      "pattern_type": "exact",
-      "message": "WIP claiming with session/TTL scope. DEFAULT_TTL 2h when no session available (platform-agnostic). Good fallback design.",
-      "severity": "info",
-      "added_by": {
-        "agent_id": "agent"
-      },
-      "added_at": "2026-01-30T02:53:57.412Z"
-    },
-    {
-      "id": "b_VwvsrJ",
-      "path": "./src/commands/release.ts",
-      "pattern_type": "exact",
-      "message": "Idempotent release (always succeeds). Session-aware: releases own claims if session present, TTL-only claims otherwise. Smart design.",
-      "severity": "info",
-      "added_by": {
-        "agent_id": "agent"
-      },
-      "added_at": "2026-01-30T02:53:58.281Z"
-    },
-    {
-      "id": "b_LbaUES",
-      "path": "./src/commands/session-end.ts",
-      "pattern_type": "exact",
-      "message": "Session cleanup. Trims and validates session ID. Handles missing config gracefully. Returns removed breadcrumb list for transparency.",
-      "severity": "info",
-      "added_by": {
-        "agent_id": "agent"
-      },
-      "added_at": "2026-01-30T02:54:07.277Z"
-    },
-    {
       "id": "b_ezozYL",
       "path": "./src/lib/schema.ts",
       "pattern_type": "exact",
@@ -198,17 +165,6 @@
         "agent_id": "agent"
       },
       "added_at": "2026-01-30T03:15:12.799Z"
-    },
-    {
-      "id": "b_2ezaMm",
-      "path": "./src/commands/wait.ts",
-      "pattern_type": "exact",
-      "message": "Bun-only: Uses native Bun.sleep for async waiting. Configurable timeout/poll. Only blocks on active claims.",
-      "severity": "info",
-      "added_by": {
-        "agent_id": "agent"
-      },
-      "added_at": "2026-01-30T03:15:13.986Z"
     },
     {
       "id": "b_I9Lfac",

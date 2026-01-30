@@ -76,22 +76,8 @@ export function findBreadcrumbById(
   return config.breadcrumbs.find((b) => b.id === id);
 }
 
-export interface BuildAddedByOptions {
-  sessionId?: string;
-  task?: string;
-}
-
-export function buildAddedBy(options: BuildAddedByOptions = {}): AddedBy {
+export function buildAddedBy(): AddedBy {
   const agentId = process.env.BREADCRUMB_AUTHOR || "agent";
-  const addedBy: AddedBy = { agent_id: agentId };
-
-  if (options.sessionId) {
-    addedBy.session_id = options.sessionId;
-  }
-  if (options.task) {
-    addedBy.task = options.task;
-  }
-
-  return addedBy;
+  return { agent_id: agentId };
 }
 

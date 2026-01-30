@@ -9,8 +9,6 @@ export function registerLsCommand(program: Command): void {
     .description("List all breadcrumbs")
     .option("-e, --expired", "Include expired breadcrumbs")
     .option("-s, --severity <level>", "Filter by severity: info, warn")
-    .option("-a, --active", "Show only active claims (session-scoped)")
-    .option("--session <id>", "Filter by session ID")
     .action((options) => {
       const configPath = findConfigPath();
 
@@ -39,8 +37,6 @@ export function registerLsCommand(program: Command): void {
 
         // Single-pass filtering and stats collection
         const breadcrumbs: typeof config.breadcrumbs = [];
-        const activeSessions = new Set<string>();
-        let claims = 0;
         let warnings = 0;
 
         for (const b of config.breadcrumbs) {
@@ -48,18 +44,10 @@ export function registerLsCommand(program: Command): void {
           if (!options.expired && isExpired(b)) continue;
           // Filter by severity
           if (options.severity && b.severity !== options.severity) continue;
-          // Filter by active claims (session-scoped)
-          if (options.active && !b.session_id) continue;
-          // Filter by session ID
-          if (options.session && b.session_id !== options.session) continue;
 
           breadcrumbs.push(b);
 
-          // Collect stats in same pass
-          if (b.session_id) {
-            activeSessions.add(b.session_id);
-            claims++;
-          } else if (b.severity === "warn") {
+          if (b.severity === "warn") {
             warnings++;
           }
         }
@@ -76,9 +64,7 @@ export function registerLsCommand(program: Command): void {
           breadcrumbs,
           summary: {
             total: breadcrumbs.length,
-            claims,
             warnings,
-            active_sessions: activeSessions.size,
           },
         });
       } catch (error) {

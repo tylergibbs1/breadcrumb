@@ -59,7 +59,6 @@ export function registerCheckCommand(program: Command): void {
     .description("Check a path for breadcrumb warnings")
     .argument("<path>", "File or directory path to check")
     .option("-r, --recursive", "Recursively check all files in directory")
-    .option("--exclude-session <sessionId>", "Exclude breadcrumbs from this session (for self-check)")
     .action((path, options) => {
       const configPath = findConfigPath();
 
@@ -103,10 +102,6 @@ export function registerCheckCommand(program: Command): void {
           const matches = findMatchingBreadcrumbs(config.breadcrumbs, checkPath);
 
           for (const match of matches) {
-            // Skip breadcrumbs from the excluded session (self-check)
-            if (options.excludeSession && match.added_by?.session_id === options.excludeSession) {
-              continue;
-            }
             // Deduplicate by ID using Set for O(1) lookup
             if (!seenIds.has(match.id)) {
               seenIds.add(match.id);

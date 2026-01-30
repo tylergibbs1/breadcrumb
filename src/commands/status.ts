@@ -1,12 +1,11 @@
 import type { Command } from "commander";
 import { findConfigPath, isExpired, loadConfig } from "../lib/config.js";
 import { outputError, outputJson } from "../lib/output.js";
-import type { Breadcrumb } from "../lib/types.js";
 
 export function registerStatusCommand(program: Command): void {
   program
     .command("status")
-    .description("Show overview of active work and breadcrumbs")
+    .description("Show overview of breadcrumbs")
     .action(() => {
       const configPath = findConfigPath();
 
@@ -21,37 +20,21 @@ export function registerStatusCommand(program: Command): void {
       try {
         const config = loadConfig(configPath);
 
-        // Single-pass collection of all stats
-        const activeBreadcrumbs: Breadcrumb[] = [];
-        const activeClaims: Breadcrumb[] = [];
-        const activeSessions = new Set<string>();
+        let total = 0;
         let warnings = 0;
 
         for (const b of config.breadcrumbs) {
           if (isExpired(b)) continue;
-
-          activeBreadcrumbs.push(b);
-
-          // Active claims are session-scoped or TTL-based warn breadcrumbs
-          if (b.session_id || (b.severity === "warn" && b.ttl)) {
-            activeClaims.push(b);
-            if (b.session_id) {
-              activeSessions.add(b.session_id);
-            }
-          } else if (b.severity === "warn") {
-            // Permanent warnings (no session, no TTL)
+          total++;
+          if (b.severity === "warn") {
             warnings++;
           }
         }
 
         outputJson({
-          active_claims: activeClaims,
+          total,
           warnings,
-          summary: {
-            active_sessions: activeSessions.size,
-            total_claims: activeClaims.length,
-            total_breadcrumbs: activeBreadcrumbs.length,
-          },
+          info: total - warnings,
         });
       } catch (error) {
         outputError(

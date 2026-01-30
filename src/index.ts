@@ -18,15 +18,11 @@ import { dirname, join } from "node:path";
 import { Command } from "commander";
 import { registerAddCommand } from "./commands/add.js";
 import { registerCheckCommand } from "./commands/check.js";
-import { registerClaimCommand } from "./commands/claim.js";
 import { registerInitCommand } from "./commands/init.js";
 import { registerLsCommand } from "./commands/ls.js";
 import { registerPruneCommand } from "./commands/prune.js";
-import { registerReleaseCommand } from "./commands/release.js";
 import { registerRmCommand } from "./commands/rm.js";
-import { registerSessionEndCommand } from "./commands/session-end.js";
 import { registerStatusCommand } from "./commands/status.js";
-import { registerWaitCommand } from "./commands/wait.js";
 
 // Read version from package.json
 const __dirname = dirname(Bun.fileURLToPath(import.meta.url));
@@ -44,13 +40,9 @@ registerInitCommand(program);
 registerAddCommand(program);
 registerRmCommand(program);
 registerCheckCommand(program);
-registerClaimCommand(program);
-registerReleaseCommand(program);
 registerStatusCommand(program);
-registerWaitCommand(program);
 registerLsCommand(program);
 registerPruneCommand(program);
-registerSessionEndCommand(program);
 
 // Parse arguments
 program.parse();

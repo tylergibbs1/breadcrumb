@@ -77,10 +77,6 @@ export function isExpired(breadcrumb: Breadcrumb): boolean {
  * Get expiration time for display purposes
  */
 export function getExpirationInfo(breadcrumb: Breadcrumb): string | null {
-  if (breadcrumb.session_id) {
-    return `session: ${breadcrumb.session_id}`;
-  }
-
   if (breadcrumb.ttl) {
     try {
       const addedAt = new Date(breadcrumb.added_at).getTime();
@@ -97,23 +93,4 @@ export function getExpirationInfo(breadcrumb: Breadcrumb): string | null {
   }
 
   return null;
-}
-
-/**
- * Remove all breadcrumbs for a given session ID
- */
-export function removeSessionBreadcrumbs(
-  breadcrumbs: Breadcrumb[],
-  sessionId: string
-): { remaining: Breadcrumb[]; removed: Breadcrumb[] } {
-  const removed: Breadcrumb[] = [];
-  const remaining = breadcrumbs.filter((b) => {
-    if (b.session_id === sessionId) {
-      removed.push(b);
-      return false;
-    }
-    return true;
-  });
-
-  return { remaining, removed };
 }
