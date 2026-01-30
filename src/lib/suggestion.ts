@@ -1,5 +1,10 @@
 import type { Breadcrumb, Severity } from "./types.js";
 
+const SEVERITY_PRIORITY: Record<Severity, number> = {
+  info: 1,
+  warn: 2,
+};
+
 function extractFirstSentence(message: string): string {
   // Match first sentence ending with . ! or ? followed by space or end
   // This avoids splitting on periods in filenames like "config.json"
@@ -21,8 +26,7 @@ export function generateSuggestion(breadcrumbs: Breadcrumb[]): string | null {
 
   // Sort by severity (highest first)
   const sorted = [...breadcrumbs].sort((a, b) => {
-    const severityOrder: Record<Severity, number> = { warn: 2, info: 1 };
-    return severityOrder[b.severity] - severityOrder[a.severity];
+    return SEVERITY_PRIORITY[b.severity] - SEVERITY_PRIORITY[a.severity];
   });
 
   const lines: string[] = [];

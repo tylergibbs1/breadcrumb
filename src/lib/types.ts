@@ -38,8 +38,3 @@ export interface ErrorResult {
   code: string;
   message: string;
 }
-
-export const SEVERITY_PRIORITY: Record<Severity, number> = {
-  info: 1,
-  warn: 2,
-};

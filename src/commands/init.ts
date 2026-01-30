@@ -1,7 +1,7 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Command } from "commander";
-import { createEmptyConfig, findConfigPath } from "../lib/config.js";
+import { createEmptyConfig, saveConfig } from "../lib/config.js";
 import { outputError, outputJson } from "../lib/output.js";
 
 export function registerInitCommand(program: Command): void {
@@ -18,7 +18,7 @@ export function registerInitCommand(program: Command): void {
       }
 
       const config = createEmptyConfig();
-      writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+      saveConfig(configPath, config);
 
       outputJson({
         success: true,

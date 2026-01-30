@@ -21,7 +21,6 @@ export const BreadcrumbSchema = z.object({
   expires: z
     .string()
     .datetime({ offset: true })
-    .optional()
     .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
     .optional(),
   ttl: z.string().regex(/^\d+[smhd]$/, "TTL must be like 30s, 5m, 2h, or 7d").optional(),
