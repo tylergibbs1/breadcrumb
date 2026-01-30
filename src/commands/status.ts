@@ -21,23 +21,28 @@ export function registerStatusCommand(program: Command): void {
       try {
         const config = loadConfig(configPath);
 
-        // Filter out expired breadcrumbs
-        const activeBreadcrumbs = config.breadcrumbs.filter((b) => !isExpired(b));
+        // Single-pass collection of all stats
+        const activeBreadcrumbs: Breadcrumb[] = [];
+        const activeClaims: Breadcrumb[] = [];
+        const activeSessions = new Set<string>();
+        let warnings = 0;
 
-        // Active claims are session-scoped or TTL-based warn breadcrumbs
-        const activeClaims = activeBreadcrumbs.filter(
-          (b) => b.session_id || (b.severity === "warn" && b.ttl)
-        );
+        for (const b of config.breadcrumbs) {
+          if (isExpired(b)) continue;
 
-        // Permanent warnings (no session, no TTL)
-        const warnings = activeBreadcrumbs.filter(
-          (b) => !b.session_id && !b.ttl && b.severity === "warn"
-        ).length;
+          activeBreadcrumbs.push(b);
 
-        // Count unique active sessions
-        const activeSessions = new Set(
-          activeClaims.map((b) => b.session_id).filter(Boolean)
-        );
+          // Active claims are session-scoped or TTL-based warn breadcrumbs
+          if (b.session_id || (b.severity === "warn" && b.ttl)) {
+            activeClaims.push(b);
+            if (b.session_id) {
+              activeSessions.add(b.session_id);
+            }
+          } else if (b.severity === "warn") {
+            // Permanent warnings (no session, no TTL)
+            warnings++;
+          }
+        }
 
         outputJson({
           active_claims: activeClaims,

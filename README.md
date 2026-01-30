@@ -23,11 +23,13 @@ breadcrumb add ./src/parser.ts "Regex handles unicode edge cases, don't simplify
 
 ## Installation
 
-```bash
-# npm
-npm install -g breadcrumb-cli
+**Requires [Bun](https://bun.sh) runtime.**
 
-# bun
+```bash
+# Install Bun (if you don't have it)
+curl -fsSL https://bun.sh/install | bash
+
+# Install breadcrumb
 bun add -g breadcrumb-cli
 ```
 
@@ -122,11 +124,11 @@ The plugin:
 
 Breadcrumb works with **any AI agent system** that can run shell commands.
 
-| Component | Vendor-specific? |
-|-----------|------------------|
-| CLI (`breadcrumb`) | No - works everywhere |
-| `.breadcrumbs.json` | No - plain JSON |
-| Claude Code plugin | Yes - optional integration |
+| Component | Requirement |
+|-----------|-------------|
+| CLI (`breadcrumb`) | Bun runtime |
+| `.breadcrumbs.json` | Plain JSON - works everywhere |
+| Claude Code plugin | Optional integration |
 
 For other tools (Cursor, Windsurf, Aider), add to your system prompt or equivalent:
 - Check for notes before editing: `breadcrumb check <file>`

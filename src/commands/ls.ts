@@ -37,26 +37,31 @@ export function registerLsCommand(program: Command): void {
       try {
         const config = loadConfig(configPath);
 
-        let breadcrumbs = config.breadcrumbs;
+        // Single-pass filtering and stats collection
+        const breadcrumbs: typeof config.breadcrumbs = [];
+        const activeSessions = new Set<string>();
+        let claims = 0;
+        let warnings = 0;
 
-        // Filter expired
-        if (!options.expired) {
-          breadcrumbs = breadcrumbs.filter((b) => !isExpired(b));
-        }
+        for (const b of config.breadcrumbs) {
+          // Filter expired
+          if (!options.expired && isExpired(b)) continue;
+          // Filter by severity
+          if (options.severity && b.severity !== options.severity) continue;
+          // Filter by active claims (session-scoped)
+          if (options.active && !b.session_id) continue;
+          // Filter by session ID
+          if (options.session && b.session_id !== options.session) continue;
 
-        // Filter by severity
-        if (options.severity) {
-          breadcrumbs = breadcrumbs.filter((b) => b.severity === options.severity);
-        }
+          breadcrumbs.push(b);
 
-        // Filter by active claims (session-scoped)
-        if (options.active) {
-          breadcrumbs = breadcrumbs.filter((b) => b.session_id);
-        }
-
-        // Filter by session ID
-        if (options.session) {
-          breadcrumbs = breadcrumbs.filter((b) => b.session_id === options.session);
+          // Collect stats in same pass
+          if (b.session_id) {
+            activeSessions.add(b.session_id);
+            claims++;
+          } else if (b.severity === "warn") {
+            warnings++;
+          }
         }
 
         // Sort by severity (warn > info), then by path
@@ -66,15 +71,6 @@ export function registerLsCommand(program: Command): void {
           if (severityDiff !== 0) return severityDiff;
           return a.path.localeCompare(b.path);
         });
-
-        // Count unique active sessions
-        const activeSessions = new Set(
-          breadcrumbs.filter((b) => b.session_id).map((b) => b.session_id)
-        );
-
-        // Count claims vs warnings
-        const claims = breadcrumbs.filter((b) => b.session_id).length;
-        const warnings = breadcrumbs.filter((b) => !b.session_id && b.severity === "warn").length;
 
         outputJson({
           breadcrumbs,

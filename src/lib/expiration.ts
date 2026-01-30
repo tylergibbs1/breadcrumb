@@ -1,16 +1,20 @@
 import type { Breadcrumb } from "./types.js";
 
+/** Pre-compiled regex for duration parsing */
+const DURATION_REGEX = /^(\d+)([smhd])$/;
+
 /**
  * Parse duration string (e.g., "30s", "5m", "2h", "7d") to milliseconds
  */
 export function parseDuration(duration: string): number {
-  const match = duration.match(/^(\d+)([smhd])$/);
+  const match = duration.match(DURATION_REGEX);
   if (!match) {
     throw new Error(`Invalid duration format: ${duration}. Use format like 30s, 5m, 2h, or 7d`);
   }
 
-  const value = parseInt(match[1], 10);
-  const unit = match[2];
+  // match[1] and match[2] are guaranteed by regex capture groups
+  const value = parseInt(match[1]!, 10);
+  const unit = match[2]!;
 
   switch (unit) {
     case "s":

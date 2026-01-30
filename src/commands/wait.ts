@@ -5,10 +5,6 @@ import { parseDuration } from "../lib/expiration.js";
 import { findMatchingBreadcrumbs } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export function registerWaitCommand(program: Command): void {
   program
     .command("wait")
@@ -89,8 +85,8 @@ export function registerWaitCommand(program: Command): void {
             process.exit(1);
           }
 
-          // Wait before next poll
-          await sleep(pollMs);
+          // Wait before next poll using Bun's native sleep
+          await Bun.sleep(pollMs);
         }
       } catch (error) {
         outputError(

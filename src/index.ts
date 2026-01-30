@@ -1,4 +1,17 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+
+// Bun runtime check - give helpful error for Node.js users
+if (typeof Bun === "undefined") {
+  console.error(`
+╔══════════════════════════════════════════════════════════════╗
+║  breadcrumb requires Bun runtime                             ║
+║                                                              ║
+║  Install Bun:  curl -fsSL https://bun.sh/install | bash      ║
+║  Then run:     bun install -g breadcrumb-cli                 ║
+╚══════════════════════════════════════════════════════════════╝
+`);
+  process.exit(1);
+}
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

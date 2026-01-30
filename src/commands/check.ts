@@ -94,6 +94,7 @@ export function registerCheckCommand(program: Command): void {
         // Collect all matches across all paths
         const allMatches: Breadcrumb[] = [];
         const checkedPaths = new Set<string>();
+        const seenIds = new Set<string>();
 
         for (const checkPath of pathsToCheck) {
           if (checkedPaths.has(checkPath)) continue;
@@ -106,8 +107,9 @@ export function registerCheckCommand(program: Command): void {
             if (options.excludeSession && match.added_by?.session_id === options.excludeSession) {
               continue;
             }
-            // Deduplicate by ID
-            if (!allMatches.some((m) => m.id === match.id)) {
+            // Deduplicate by ID using Set for O(1) lookup
+            if (!seenIds.has(match.id)) {
+              seenIds.add(match.id);
               allMatches.push(match);
             }
           }

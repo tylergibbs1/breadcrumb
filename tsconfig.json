@@ -1,19 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    // Environment setup & latest features (Bun recommended)
+    "lib": ["ESNext"],
+    "target": "ESNext",
     "module": "ESNext",
+    "moduleDetection": "force",
+
+    // Bundler mode (Bun recommended)
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    // Best practices (Bun recommended)
     "strict": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "dist",
+
+    // Project structure
     "rootDir": "src",
-    "types": ["bun-types", "node"]
+    "types": ["bun-types"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

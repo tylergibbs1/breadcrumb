@@ -1,12 +1,23 @@
-import fg from "fast-glob";
-import { minimatch } from "minimatch";
+import { Glob } from "bun";
 import { basename, resolve } from "node:path";
 import { isExpired } from "./expiration.js";
 import type { Breadcrumb, PatternType } from "./types.js";
 
+/** Pre-compiled regex for path separator normalization */
+const PATH_SEP_REGEX = /[\\/]/g;
+
 /** Convert path to POSIX-style (forward slashes) for cross-platform compatibility */
 function toPosix(p: string): string {
-  return p.split(/[\\/]/).join("/");
+  return p.replace(PATH_SEP_REGEX, "/");
+}
+
+/** Cached POSIX-style cwd to avoid repeated resolve + replace calls */
+let _cwdPosixCache: string | null = null;
+function cwdPosixCached(): string {
+  if (_cwdPosixCache === null) {
+    _cwdPosixCache = toPosix(process.cwd());
+  }
+  return _cwdPosixCache;
 }
 
 export function detectPatternType(path: string): PatternType {
@@ -40,21 +51,22 @@ export function matchesPath(
     case "glob": {
       const pattern = breadcrumb.path;
 
-      // Build relative path for matching
-      const cwd = toPosix(process.cwd());
-      let relativePath = normalizedTarget.startsWith(cwd + "/")
+      // Build relative path for matching (cwd cached for performance)
+      const cwd = cwdPosixCached();
+      const relativePath = normalizedTarget.startsWith(cwd + "/")
         ? normalizedTarget.slice(cwd.length + 1)
         : toPosix(targetPath).replace(/^\.\//, "");
 
-      const opts = { dot: true };
+      // Use Bun's native Glob for fast pattern matching
+      const glob = new Glob(pattern);
 
       // Simple patterns (no path separator) match against filename
       if (!pattern.includes("/")) {
-        return minimatch(basename(normalizedTarget), pattern, opts);
+        return glob.match(basename(normalizedTarget));
       }
 
       // Complex patterns match against relative path
-      return minimatch(relativePath, pattern, opts);
+      return glob.match(relativePath);
     }
 
     default:
@@ -80,9 +92,11 @@ export function findMatchingBreadcrumbs(
 }
 
 export async function expandGlobPattern(pattern: string): Promise<string[]> {
-  return fg(pattern, {
-    absolute: true,
-    onlyFiles: false,
-    dot: true,
-  });
+  // Use Bun's native Glob for fast file scanning
+  const glob = new Glob(pattern);
+  const results: string[] = [];
+  for await (const file of glob.scan({ cwd: ".", absolute: true, dot: true, onlyFiles: false })) {
+    results.push(file);
+  }
+  return results;
 }
