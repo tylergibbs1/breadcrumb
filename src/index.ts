@@ -18,7 +18,7 @@ const program = new Command();
 
 program
   .name("breadcrumb")
-  .description("Agent-to-agent coordination via file-attached warnings")
+  .description("Leave notes on files for other agents to see in future sessions")
   .version(pkg.version);
 
 // Register all commands

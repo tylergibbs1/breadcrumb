@@ -7,8 +7,7 @@ import {
 } from "../lib/config.js";
 import { parseTtl } from "../lib/expiration.js";
 import { outputError, outputJson } from "../lib/output.js";
-import type { Severity } from "../lib/types.js";
-import { validateSeverity } from "../lib/validation.js";
+import { buildEvidence, parseLineRange, validateSeverity } from "../lib/validation.js";
 
 export function registerEditCommand(program: Command): void {
   program
@@ -21,6 +20,12 @@ export function registerEditCommand(program: Command): void {
     .option("-e, --expires <date>", "New expiration date (ISO 8601 or YYYY-MM-DD)")
     .option("--ttl <duration>", "New time-to-live (e.g., 30s, 5m, 2h, 7d)")
     .option("--clear-expiration", "Remove expiration/TTL from breadcrumb")
+    .option("-l, --line <range>", "Line number or range (e.g., 42 or 42-50)")
+    .option("--clear-line", "Remove line anchor from breadcrumb")
+    .option("--evidence-input <input>", "Test input that demonstrates the issue")
+    .option("--evidence-expected <expected>", "Expected behavior with this input")
+    .option("--evidence-actual <actual>", "What happens if the code is incorrectly changed")
+    .option("--clear-evidence", "Remove evidence from breadcrumb")
     .action(async (pathOrId, options) => {
       const configPath = await findConfigPath();
 
@@ -39,12 +44,18 @@ export function registerEditCommand(program: Command): void {
         options.severity ||
         options.expires ||
         options.ttl ||
-        options.clearExpiration;
+        options.clearExpiration ||
+        options.line ||
+        options.clearLine ||
+        options.evidenceInput ||
+        options.evidenceExpected ||
+        options.evidenceActual ||
+        options.clearEvidence;
 
       if (!hasEditOption) {
         outputError(
           "NO_CHANGES",
-          "No changes specified. Use --message, --append, --severity, --expires, --ttl, or --clear-expiration."
+          "No changes specified. Use --message, --append, --severity, --expires, --ttl, --line, --evidence-*, or --clear-*."
         );
         process.exit(1);
       }
@@ -103,6 +114,27 @@ export function registerEditCommand(program: Command): void {
         );
         process.exit(1);
       }
+
+      // Cannot set line and clear it at the same time
+      if (options.clearLine && options.line) {
+        outputError(
+          "CONFLICTING_OPTIONS",
+          "Cannot use --clear-line with --line."
+        );
+        process.exit(1);
+      }
+
+      // Cannot set evidence and clear it at the same time
+      if (options.clearEvidence && (options.evidenceInput || options.evidenceExpected || options.evidenceActual)) {
+        outputError(
+          "CONFLICTING_OPTIONS",
+          "Cannot use --clear-evidence with --evidence-* options."
+        );
+        process.exit(1);
+      }
+
+      // Parse and validate line range if provided
+      const lineRange = parseLineRange(options.line);
 
       try {
         const config = await loadConfig(configPath);
@@ -163,6 +195,30 @@ export function registerEditCommand(program: Command): void {
           }
         }
 
+        // Handle line range updates
+        if (options.clearLine) {
+          delete breadcrumb.line;
+        } else if (lineRange) {
+          breadcrumb.line = lineRange;
+        }
+
+        // Handle evidence updates
+        if (options.clearEvidence) {
+          delete breadcrumb.evidence;
+        } else {
+          const newEvidence = buildEvidence(
+            {
+              evidenceInput: options.evidenceInput,
+              evidenceExpected: options.evidenceExpected,
+              evidenceActual: options.evidenceActual,
+            },
+            breadcrumb.evidence
+          );
+          if (newEvidence) {
+            breadcrumb.evidence = newEvidence;
+          }
+        }
+
         // Save updated config
         config.breadcrumbs[breadcrumbIndex] = breadcrumb;
         await saveConfig(configPath, config);
@@ -180,6 +236,10 @@ export function registerEditCommand(program: Command): void {
             expires: options.expires || undefined,
             ttl: options.ttl || undefined,
             cleared_expiration: options.clearExpiration || undefined,
+            line: options.line || undefined,
+            cleared_line: options.clearLine || undefined,
+            evidence_updated: !!(options.evidenceInput || options.evidenceExpected || options.evidenceActual) || undefined,
+            cleared_evidence: options.clearEvidence || undefined,
           },
         });
       } catch (error) {

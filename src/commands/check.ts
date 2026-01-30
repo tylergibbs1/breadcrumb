@@ -1,8 +1,8 @@
 import fg from "fast-glob";
 import { resolve } from "node:path";
 import type { Command } from "commander";
-import { findConfigPath, loadConfig } from "../lib/config.js";
-import { checkStaleness } from "../lib/hash.js";
+import { findConfigPath, loadConfig, saveConfig } from "../lib/config.js";
+import { checkStaleness, computeFileHash } from "../lib/hash.js";
 import { findMatchingBreadcrumbs } from "../lib/matcher.js";
 import { outputError, outputJson } from "../lib/output.js";
 import { generateSuggestion } from "../lib/suggestion.js";
@@ -55,6 +55,8 @@ export function registerCheckCommand(program: Command): void {
     .description("Check a path for breadcrumb warnings")
     .argument("<path>", "File or directory path to check")
     .option("-r, --recursive", "Recursively check all files in directory")
+    .option("-c, --concise", "Return only status and suggestion (token-efficient for agents)")
+    .option("--verify", "Update file hashes for staleness detection")
     .action(async (path, options) => {
       const configPath = await findConfigPath();
 
@@ -116,14 +118,53 @@ export function registerCheckCommand(program: Command): void {
         const status = getHighestSeverity(allMatches);
         const suggestion = generateSuggestion(allMatches);
 
-        // Count staleness stats
+        // Handle --verify: update hashes for exact file breadcrumbs
+        let hashesUpdated = false;
+        if (options.verify) {
+          for (const match of allMatches) {
+            if (match.pattern_type === "exact") {
+              const newHash = await computeFileHash(match.path);
+              if (newHash) {
+                const configBreadcrumb = config.breadcrumbs.find((b) => b.id === match.id);
+                if (configBreadcrumb) {
+                  configBreadcrumb.code_hash = newHash;
+                  configBreadcrumb.last_verified = new Date().toISOString();
+                  hashesUpdated = true;
+                }
+              }
+            }
+          }
+          if (hashesUpdated) {
+            await saveConfig(configPath, config);
+          }
+        }
+
+        // Concise mode: return only what agents need
+        if (options.concise) {
+          const conciseResult: { status: string; suggestion: string | null; stale_count?: number; hashes_updated?: boolean } = {
+            status,
+            suggestion,
+          };
+          const staleCount = allMatches.filter((b) => b.staleness === "stale").length;
+          if (staleCount > 0) {
+            conciseResult.stale_count = staleCount;
+          }
+          if (hashesUpdated) {
+            conciseResult.hashes_updated = true;
+          }
+          outputJson(conciseResult);
+          process.exit(getExitCode(status));
+          return;
+        }
+
+        // Detailed mode (default): full metadata for programmatic use
         const stalenessStats = {
           verified: allMatches.filter((b) => b.staleness === "verified").length,
           stale: allMatches.filter((b) => b.staleness === "stale").length,
           unknown: allMatches.filter((b) => b.staleness === "unknown").length,
         };
 
-        const result: CheckResult & { staleness_summary?: typeof stalenessStats } = {
+        const result: CheckResult & { staleness_summary?: typeof stalenessStats; hashes_updated?: boolean } = {
           status,
           path: targetPath,
           breadcrumbs: allMatches,
@@ -133,6 +174,10 @@ export function registerCheckCommand(program: Command): void {
         // Only include staleness summary if there are breadcrumbs with hashes
         if (stalenessStats.verified > 0 || stalenessStats.stale > 0) {
           result.staleness_summary = stalenessStats;
+        }
+
+        if (hashesUpdated) {
+          result.hashes_updated = true;
         }
 
         outputJson(result);

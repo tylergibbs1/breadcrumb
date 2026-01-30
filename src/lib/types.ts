@@ -8,6 +8,17 @@ export interface AddedBy {
   agent_id: string;
 }
 
+export interface Evidence {
+  input: string;
+  expected: string;
+  actual_if_changed?: string;
+}
+
+export interface LineRange {
+  start: number;
+  end?: number;
+}
+
 export interface Breadcrumb {
   id: string;
   path: string;
@@ -18,6 +29,10 @@ export interface Breadcrumb {
   added_at: string;
   expires?: string;
   ttl?: string;
+  // Line-level anchoring
+  line?: LineRange;
+  // Evidence for why this breadcrumb matters
+  evidence?: Evidence;
   // Staleness detection fields
   code_hash?: string;
   last_verified?: string;
