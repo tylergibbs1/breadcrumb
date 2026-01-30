@@ -15,7 +15,6 @@ if (typeof Bun === "undefined") {
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { registerAddCommand } from "./commands/add.js";
 import { registerCheckCommand } from "./commands/check.js";
@@ -30,7 +29,7 @@ import { registerStatusCommand } from "./commands/status.js";
 import { registerWaitCommand } from "./commands/wait.js";
 
 // Read version from package.json
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = dirname(Bun.fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
 
 const program = new Command();
