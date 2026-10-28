@@ -35,6 +35,21 @@ yarn global add breadcrumb-cli
 bun add -g breadcrumb-cli
 ```
 
+### Claude Code plugin
+
+For Claude Code users, the plugin auto-shows notes when reading files:
+
+```bash
+/plugin marketplace add tylergibbs1/breadcrumb
+/plugin install breadcrumb@breadcrumb-marketplace
+```
+
+The plugin:
+- Auto-installs the CLI if not present
+- Auto-initializes `.breadcrumbs.json` on session start
+- Injects notes into Claude's context when reading files
+- Claude acknowledges notes when they conflict with the current task
+
 ## Quick Start
 
 ```bash
@@ -267,21 +282,6 @@ breadcrumb check ./src/file.ts -c
 **Before (~150 tokens):** Full metadata with id, hash, timestamps, added_by...
 **After (~40 tokens):** Just status and suggestion.
 
-## Claude Code Plugin
-
-For Claude Code users, the plugin auto-shows notes when reading files:
-
-```bash
-/plugin marketplace add tylergibbs1/breadcrumb
-/plugin install breadcrumb@breadcrumb-marketplace
-```
-
-The plugin:
-- Auto-installs the CLI if not present
-- Auto-initializes `.breadcrumbs.json` on session start
-- Injects notes into Claude's context when reading files
-- Claude acknowledges notes when they conflict with the current task
-
 ## Vendor Agnostic
 
 Breadcrumb works with **any AI agent system** that can run shell commands.
@@ -317,6 +317,16 @@ Notes are stored in `.breadcrumbs.json` at repo root:
 }
 ```
 
+## Development
+
+```bash
+npm install
+npm run dev -- ls     # run the CLI from source
+npm test              # node --test
+npm run typecheck
+npm run build
+```
+
 ## License
 
-MIT
+[MIT](LICENSE)
